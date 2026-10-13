@@ -1,0 +1,3138 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0C0C0C" />
+    <title>YIJUN — 不止于设计 · NOT JUST DESIGN</title>
+    <meta
+      name="description"
+      content="NOT JUST DESIGN · 不止于设计。一个设计师的 AI × Product × Psychology 实验室。"
+    />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0C0C'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Arial' font-weight='800' font-size='36' fill='%23ED9E5C'%3EY%3C/text%3E%3C/svg%3E"
+    />
+
+    <!-- apply the stored theme before first paint, so a warm-mode reload
+         never flashes the dark palette -->
+    <script>
+      try {
+        if (localStorage.getItem('yj-theme') === 'warm') {
+          document.documentElement.setAttribute('data-theme', 'warm');
+        }
+      } catch (e) {
+        /* private mode etc. — fall back to the dark default */
+      }
+    </script>
+
+    <!-- Diagnostics. If anything in the interactive layer throws, say WHAT
+         rather than hanging on a loading screen — and make clear it is not a
+         network problem, so the two failure modes cannot be confused. -->
+    <script>
+      window.__yjFail = function (title, detail) {
+        var boot = document.getElementById('boot');
+        if (!boot) return;
+        boot.innerHTML = '';
+        var box = document.createElement('div');
+        box.setAttribute('style', 'max-width:640px;text-align:left');
+
+        var heading = document.createElement('div');
+        heading.setAttribute(
+          'style',
+          'font-size:17px;font-weight:700;margin-bottom:14px;color:#F0A08C;letter-spacing:.02em'
+        );
+        heading.textContent = title;
+        box.appendChild(heading);
+
+        var body = document.createElement('pre');
+        body.setAttribute(
+          'style',
+          'white-space:pre-wrap;font-size:12px;line-height:1.75;opacity:.82;margin:0;font-family:ui-monospace,Consolas,monospace'
+        );
+        body.textContent = detail;
+        box.appendChild(body);
+
+        boot.appendChild(box);
+      };
+
+      // Script errors only. Resource errors (a 404 on content.js, a blocked
+      // font) do NOT bubble, so they will never trigger a false alarm here.
+      window.addEventListener('error', function (event) {
+        var message = event && event.message ? event.message : '未知脚本错误';
+        if (event && event.filename) {
+          message += '\n  位置：' + event.filename + ':' + (event.lineno || 0) + ':' + (event.colno || 0);
+        }
+        if (event && event.error && event.error.stack) {
+          message += '\n\n' + event.error.stack;
+        }
+        window.__yjFail('页面脚本出错 —— 这是代码问题，不是网络问题', message);
+      });
+
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event && event.reason ? event.reason : '未知';
+        window.__yjFail(
+          '页面出现未处理的异步错误',
+          String(reason && reason.stack ? reason.stack : reason)
+        );
+      });
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Guarded: if the Play CDN is blocked this must not throw and take the
+      // rest of the head down with it.
+      if (window.tailwind) {
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: { kanit: ['Kanit', 'sans-serif'] },
+            },
+          },
+        };
+      }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+          "react/jsx-dev-runtime": "https://esm.sh/react@18.3.1/jsx-dev-runtime",
+          "react-dom": "https://esm.sh/react-dom@18.3.1?external=react",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?external=react",
+          "framer-motion": "https://esm.sh/framer-motion@11?external=react,react-dom",
+          "three": "https://esm.sh/three@0.186.1"
+        }
+      }
+    </script>
+
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      /* ------------------------------------------------------------------
+         THEME TOKENS — dark base (signature style) ⇄ warm cream (the brief)
+         Toggle with the ☼ / ◐ button. Everything below reads these vars,
+         so switching the whole site to the warm palette is a one-attribute
+         change: <html data-theme="warm">.
+         ------------------------------------------------------------------ */
+      :root,
+      [data-theme='dark'] {
+        --bg: #0c0c0c;
+        --bg-soft: #131313;
+        --card: #0e0e0e;
+        --text: #d7e2ea;
+        --text-dim: rgba(215, 226, 234, 0.58);
+        --line: rgba(215, 226, 234, 0.2);
+        --ring: rgba(215, 226, 234, 0.85);
+        --panel: rgba(215, 226, 234, 0.05);
+        --glow-op: 0.17;
+        --h1: #646973;
+        --h2: #bbccd7;
+        --char-glow: 0.11;
+      }
+
+      [data-theme='warm'] {
+        --bg: #f7f1e7;
+        --bg-soft: #f3e9d8;
+        --card: #fffbf3;
+        --text: #4b3826;
+        --text-dim: rgba(75, 56, 38, 0.62);
+        --line: rgba(75, 56, 38, 0.18);
+        --ring: rgba(75, 56, 38, 0.5);
+        --panel: rgba(75, 56, 38, 0.05);
+        --glow-op: 0.55;
+        --h1: #a8907a;
+        --h2: #4b3826;
+        --char-glow: 0.17;
+        --warm-mix: 30%;
+      }
+
+      /* warm accents — identical in both themes */
+      :root {
+        --accent: #ed9e5c;
+        --peach: #f4b8a4;
+        --sage: #a9bc9b;
+        --ai: #f8e2a0;
+        --psych: #f7d8ce;
+        --product: #f6cba0;
+        --cream: #f7f1e7;
+        --tint: var(--accent);
+      }
+
+      html,
+      body,
+      #root {
+        background-color: var(--bg);
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Kanit, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background-color 0.5s ease, color 0.5s ease;
+      }
+
+      ::selection {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      /* gradient display type, theme aware */
+      .hero-heading {
+        background: linear-gradient(180deg, var(--h1) 0%, var(--h2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+      }
+
+      /* per-section warm identity: glow on dark, tinted panel on cream */
+      .tinted {
+        position: relative;
+        background-color: var(--bg);
+        transition: background-color 0.5s ease;
+      }
+      .tint-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: var(--glow-op);
+        transition: opacity 0.5s ease;
+        background: radial-gradient(72% 62% at 50% 0%, var(--tint) 0%, transparent 70%);
+      }
+      [data-theme='warm'] .tinted {
+        /* The brief wants cream as the BASE and only the later sections
+           tinted (AI 淡黄 / Psychology 淡粉 / Product 杏色), so each section
+           dials its own strength. The hero sets 6% — essentially cream. */
+        background-color: color-mix(in srgb, var(--tint) var(--warm-mix, 30%), var(--bg));
+      }
+      [data-theme='warm'] .tint-layer {
+        /* Tinted sections get their colour from the background mix instead;
+           only sections that opt in (the hero) keep a soft warm halo. */
+        opacity: var(--warm-glow, 0);
+      }
+
+      .rim {
+        border-color: var(--ring);
+      }
+      .card-surface {
+        background-color: var(--card);
+        border-color: var(--line);
+      }
+      .txt-dim {
+        color: var(--text-dim);
+      }
+
+      /* The hero shows the render that matches the current palette:
+         the black-background art on the dark base, the white-background art
+         on the cream palette. Pure CSS, so the swap is instant and needs no
+         JS state. Both files are local, so the hidden one costs nothing. */
+      .theme-light-only {
+        display: none;
+      }
+      [data-theme='warm'] .theme-dark-only {
+        display: none;
+      }
+      [data-theme='warm'] .theme-light-only {
+        display: block;
+      }
+
+      /* MagicRings — the WebGL ring field behind the hero portrait.
+         Two additions on top of the published React Bits CSS: the shader has a
+         base glow term that fills the whole quad, so on the dark base `screen`
+         blending dissolves that fill into the page, and on the cream palette
+         the radial mask instead fades out before the canvas edge (64% of the
+         farthest corner ≈ 216px, inside the 235px half-width — otherwise a
+         soft plate shows). */
+      .magic-rings-container {
+        width: 100%;
+        height: 100%;
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 34%, rgba(0, 0, 0, 0) 78%);
+        mask-image: radial-gradient(circle at 50% 50%, #000 34%, rgba(0, 0, 0, 0) 78%);
+        mix-blend-mode: screen;
+      }
+      [data-theme='warm'] .magic-rings-container {
+        mix-blend-mode: normal;
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 24%, rgba(0, 0, 0, 0) 64%);
+        mask-image: radial-gradient(circle at 50% 50%, #000 24%, rgba(0, 0, 0, 0) 64%);
+      }
+
+      /* character reactions */
+      .cj-head {
+        transform-box: fill-box;
+        transform-origin: 50% 100%;
+        transform: rotate(var(--head-rot, 0deg));
+        transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      .cj-arm-r {
+        transform-box: fill-box;
+        transform-origin: 50% 8%;
+        transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      body[data-react='design'] .cj-arm-r {
+        transform: rotate(-16deg);
+      }
+      body[data-react='ai'] .cj-head {
+        transform: rotate(7deg);
+      }
+      body[data-react='code'] .cj-arm-r {
+        transform: rotate(-10deg);
+      }
+      body[data-react='psych'] .cj-head {
+        transform: rotate(-5deg);
+      }
+
+      @keyframes floaty {
+        0%,
+        100% {
+          translate: 0 0;
+        }
+        50% {
+          translate: 0 -12px;
+        }
+      }
+      @keyframes twinkle {
+        0%,
+        100% {
+          transform: scale(0.4);
+          opacity: 0.3;
+        }
+        50% {
+          transform: scale(1.15);
+          opacity: 1;
+        }
+      }
+      @keyframes bubble {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: translateY(-16px) scale(1.08);
+          opacity: 1;
+        }
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(8px);
+        }
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          transition-duration: 0.001ms !important;
+        }
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="root">
+      <!-- A real, script-free first paint. Deliberately inline-styled (no
+           Tailwind, no React) so the page still shows something meaningful
+           even if scripting is blocked or every CDN is unreachable. Replaced
+           the moment React mounts. -->
+      <div
+        id="boot"
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          background: #0c0c0c;
+          color: #d7e2ea;
+          font-family: Kanit, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+          text-align: center;
+          padding: 24px;
+        "
+      >
+        <div style="font-size: 11px; letter-spacing: 0.42em; color: #ed9e5c">NOT JUST DESIGN</div>
+        <h1 style="margin: 0; font-size: clamp(2rem, 8vw, 5rem); font-weight: 900; line-height: 1.05; color: #e8e2d8">
+          不止于设计。
+        </h1>
+        <p style="margin: 0; font-size: clamp(0.9rem, 2vw, 1.15rem); opacity: 0.72">
+          我正在学习如何把想法真正做出来。
+        </p>
+        <p style="margin: 4px 0 0; font-size: 11px; letter-spacing: 0.2em; opacity: 0.4">
+          YIJUN · DESIGNER / AI LEARNER
+        </p>
+        <p style="margin: 18px 0 0; font-size: 12px; opacity: 0.45; max-width: 440px; line-height: 1.8">
+          正在加载交互层（React / Framer Motion / Tailwind）…
+        </p>
+      </div>
+    </div>
+
+    <script>
+      window.setTimeout(function () {
+        var boot = document.getElementById('boot');
+        if (!boot) return;
+        window.__yjFail(
+          '交互层没能加载起来',
+          '注意：你现在看到的「不止于设计。」是纯 HTML，不需要 JavaScript ——\n' +
+            '所以文件本身是好的，停留在这个界面说明下面这件事发生了：\n\n' +
+            '  React / Framer Motion / Tailwind 三个 CDN 之一没能加载，\n' +
+            '  或者当前环境不允许执行脚本。\n\n' +
+            '请依次检查：\n' +
+            '  1. 网络或代理能否访问 esm.sh、cdn.jsdelivr.net、cdn.tailwindcss.com\n' +
+            '  2. 如果这是在一个预览面板里打开的，预览很可能禁止了脚本 ——\n' +
+            '     请把文件下载到本地，用浏览器直接打开\n' +
+            '  3. 打开浏览器控制台（F12 → Console），看有没有红色报错\n'
+        );
+      }, 12000);
+    </script>
+
+    <!-- 内容数据（content.json）由下面的脚本在运行时从 GitHub 拉取，
+         admin.html 点“保存并发布”后，访客刷新页面即看到最新内容。 -->
+
+    <script type="text/babel" data-type="module" data-presets="react">
+      import React, { useEffect, useMemo, useRef, useState } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { motion, useScroll, useTransform } from 'framer-motion';
+
+      /* ====================================================================
+       * CONTENT — NOT JUST DESIGN / 不止于设计
+       * ================================================================== */
+
+      const NAV = [
+        { label: 'WORKS', href: '#works' },
+        { label: 'AI', href: '#ai' },
+        { label: 'PSYCHOLOGY', href: '#psych' },
+        { label: 'ABOUT', href: '#about' },
+      ];
+
+      const HERO = {
+        brand: 'NOT JUST DESIGN',
+        lab: '一个设计师的 AI × Product × Psychology 实验室',
+        title: '不止于设计。',
+        sub: '我正在学习如何把想法真正做出来。',
+        scroll: '继续看看，我正在探索什么',
+      };
+
+      const HERO_PROPS = [
+        { key: 'design', label: 'DESIGN', cls: 'left-[0%] top-[4%]' },
+        { key: 'ai', label: 'AI', cls: 'right-[0%] top-[0%]' },
+        { key: 'code', label: 'VIBE CODING', cls: 'left-[-2%] bottom-[16%]' },
+        { key: 'psych', label: 'PSYCHOLOGY', cls: 'right-[-2%] bottom-[10%]' },
+      ];
+
+      /**
+       * Hero portrait. Your two renders — black background for the dark base,
+       * white background for the cream palette — chosen by pure CSS.
+       * Each list is tried in order; the absolute path is a best-effort
+       * fallback for the copies you attached to this session.
+       */
+      const PORTRAIT = {
+        dark: [
+          /* The list is walked in order on each load error, so the format that
+             is actually on disk goes first — otherwise every page load eats a
+             pointless 404 before falling through. */
+          'portrait-dark.png',
+          'portrait-dark.webp',
+          '白西装插兜职业形象图.png',
+          'file:///C:/Users/Administrator/.dsh/attachments/v1/objects/c5/c57f03aecf486bc03a91310eebac752da39ccaf2664dd6ef14ca41a3ed9e9e17',
+        ],
+        light: [
+          'portrait-light.webp',
+          'portrait-light.png',
+          '白西装插兜职业形象图 (1).webp',
+          '白西装插兜职业形象图 (1).png',
+          'file:///C:/Users/Administrator/.dsh/attachments/v1/objects/fd/fd07c72841e46efe8e1784958074041fa4581b286bec0a37a565746fae3ffd3e',
+        ],
+      };
+
+      /** Height is driven by the viewport so the figure reads at 55–65vh. */
+      const PORTRAIT_STYLE = { height: 'clamp(270px, 52vh, 560px)', width: 'auto' };
+
+      const ABOUT = {
+        eyebrow: 'ABOUT ME',
+        title: '先认识一下我。',
+        lines: [
+          '我是一名设计师。做过很多海报、视觉设计和信息图文。',
+          '长期与医疗、心理健康等内容打交道，也让我越来越关注一件事：',
+          '设计不只是「好看」，更重要的是让信息被理解，让人感受到。',
+          '现在，我开始学习 AI 和 Vibe Coding。我想知道：',
+          '如果一个设计师拥有了创造产品的能力，还能做出什么？',
+        ],
+        flow: ['医疗设计', '心理关注', 'AI', '产品'],
+      };
+
+      /* Your six real pieces. `image` points at works/…; the vector POSTERS
+         stay as the fallback for any entry that has no image. */
+      const WORKS = [
+        {
+          num: '01',
+          cat: 'PSYCHOLOGY',
+          catEn: 'COMMUNICATION',
+          catCn: '心理科普',
+          title: '害怕社交就是病？',
+          title2: '直面「社恐」科普视觉',
+          year: '2026',
+          image: 'works/01-social-anxiety.jpg',
+        },
+        {
+          num: '02',
+          cat: 'MEDICAL',
+          catEn: 'HEALTH',
+          catCn: '医疗健康',
+          title: '理解「躁动」',
+          title2: '情绪高涨状态科普',
+          year: '2026',
+          image: 'works/02-mania-signals.jpg',
+        },
+        {
+          num: '03',
+          cat: 'MEDICAL',
+          catEn: 'EMERGENCY',
+          catCn: '医疗急救',
+          title: '癫痫发作超过 5 分钟',
+          title2: '关键急救应对科普',
+          year: '2026',
+          image: 'works/03-epilepsy-first-aid.jpg',
+        },
+        {
+          num: '04',
+          cat: 'PSYCHOLOGY',
+          catEn: 'GROWTH',
+          catCn: '心理科普',
+          title: '当孩子说「我不想上学」',
+          title2: '从厌学到愿学的 6 个阶段',
+          year: '2026',
+          image: 'works/04-school-refusal.jpg',
+        },
+        {
+          num: '05',
+          cat: 'CAMPAIGN',
+          catEn: 'WORKPLACE',
+          catCn: '活动宣传',
+          title: '团队里的内耗',
+          title2: '不该由你的情绪买单',
+          year: '2026',
+          image: 'works/05-workplace-burnout.jpg',
+        },
+        {
+          num: '06',
+          cat: 'INFORMATION',
+          catEn: 'VISUAL',
+          catCn: '信息视觉',
+          title: '告别精神内耗',
+          title2: '12 个精神牢笼信息图',
+          year: '2026',
+          image: 'works/06-inner-conflict.jpg',
+        },
+      ];
+
+      /* WORK_TYPES used to live here as a hard-coded five-item list. It drifted
+         from reality — it kept advertising "Brand · 医疗品牌视觉" while no work
+         had that category. Categories are now derived from the works in
+         DesignSection, so the list can never disagree with what is published. */
+
+      const AI = {
+        eyebrow: 'THEN, I MET AI',
+        title: '然后，我遇见了 AI。',
+        sub: '它没有替我设计，而是让我开始重新思考「设计」。',
+        classic: ['想法', '找素材', '设计', '修改', '输出'],
+        next: ['IDEA', 'AI', 'DESIGN', 'CODE', 'PRODUCT'],
+      };
+
+      const CODING = {
+        eyebrow: 'VIBE CODING',
+        title: '我开始写代码了。',
+        sub: '虽然我不一定真的「会写」，但我开始学会让 AI 和我一起写。',
+        lines: [
+          ['> create something I imagined', 'prompt'],
+          ['AI is thinking...', 'think'],
+          ['Designing...', 'act'],
+          ['Building...', 'act'],
+          ['Done.', 'done'],
+        ],
+      };
+
+      const CDN = 'https://images.higgs.ai/?default=1&output=webp&url=';
+      const SRC =
+        'https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2F';
+      const TAIL = '.png&w=1280&q=85';
+      const shot = (f) => CDN + SRC + f + TAIL;
+
+      const PRODUCT = {
+        eyebrow: 'PRODUCT',
+        title: '从「看起来不错」，到「真的能用」。',
+        sub: '目前还没有产品也没关系 —— 这里先记下它们正在长成的样子。',
+        items: [
+          {
+            num: '01',
+            name: 'My Portfolio',
+            state: '正在构建',
+            badge: 'BUILDING',
+            images: [
+              shot('hf_20260412_055344_5eff02e0-87a5-41ce-b64f-eb08da8f33db'),
+              shot('hf_20260412_055431_11d841fd-8b41-46a5-82e4-b04f2407a7d8'),
+              shot('hf_20260412_055451_e317bf2d-28d4-48cc-86b0-6f72f25b6327'),
+            ],
+          },
+          {
+            num: '02',
+            name: 'AI Design Tool',
+            state: '实验中',
+            badge: 'EXPERIMENT',
+            images: [
+              shot('hf_20260412_055654_911201c5-36d9-4bc6-bac7-331adfce159f'),
+              shot('hf_20260412_055723_5ceda0b8-d9c2-4665-b2e3-83ba19ba76d1'),
+              shot('hf_20260412_055753_adc5dcbd-a8e6-49c0-b43a-9b030d835cea'),
+            ],
+          },
+          {
+            num: '03',
+            name: 'Psychology Content Tool',
+            state: '想法阶段',
+            badge: 'IDEA',
+            images: [
+              shot('hf_20260412_055759_963cfb0b-4bd1-4b0f-9d0a-09bd6cf95b2f'),
+              shot('hf_20260412_060108_438f781a-9846-4dcc-89ab-c4e6cb830f5b'),
+              shot('hf_20260412_055818_9d062121-ad7e-46b9-999a-1a6a692ef1ee'),
+            ],
+          },
+        ],
+      };
+
+      const PSYCH = {
+        eyebrow: 'PSYCHOLOGY · EMOTION · GROWTH',
+        title: '我也在关注人的情绪。',
+        sub: '这里不是心理科普网站，只是一些我平时在想的事。',
+        thoughts: [
+          { text: '为什么越懂事的人，越容易感到累？', link: 'articles/why-tired.html' },
+          { text: '情绪不好，不一定是你太脆弱。', link: 'articles/not-weak.html' },
+          { text: '成年人的内耗，有时候来自「太想做好」。', link: 'articles/doing-it-right.html' },
+          { text: '孩子不愿意说话的时候，他可能在表达什么？', link: 'articles/silence.html' },
+        ],
+        moods: [
+          { key: 'sun', emoji: '☀️', label: '晴朗', q: '今天的你，是晴朗的。', msg: '适合把一件小事，认真做完。' },
+          { key: 'tired', emoji: '🌤️', label: '有点累', q: '有点累，也没关系。', msg: '今天允许自己慢一点。' },
+          { key: 'rain', emoji: '🌧️', label: '情绪低落', q: '情绪低落的时候。', msg: '你不必一个人撑着，被听见就已经是帮助。' },
+          { key: 'fog', emoji: '🌫️', label: '有点迷茫', q: '有点迷茫的时候。', msg: '看不清方向，不代表你在原地。' },
+          { key: 'rainbow', emoji: '🌈', label: '慢慢变好', q: '正在慢慢变好。', msg: '每一次好起来，都值得被记住。' },
+        ],
+      };
+
+      const JOURNEY = {
+        eyebrow: 'MY JOURNEY',
+        title: '我还在路上。',
+        steps: ['DESIGN', 'AI', 'VIBE CODING', 'PRODUCT', 'NEXT?'],
+        note: '最后一个问号，故意保留 —— AI 时代的空杯学习者，我还不知道未来会走到哪里。',
+      };
+
+      const FOOTER = {
+        // Two lines, as the brief writes it — as one string it wrapped and
+        // orphaned 「来。」 on its own line at desktop widths.
+        lead: ['还有很多想法，', '等着被做出来。'],
+        en: 'Design is just the beginning.',
+        cta: '看看我最近在做什么',
+        statement:
+          '我是一名设计师。我用设计理解世界，用 AI 探索可能，用 Vibe Coding 把想法做出来，也持续关注人的情绪与成长。这里，是我的设计、AI、产品和心理探索记录。',
+      };
+
+      /* ====================================================================
+       * CONTENT OVERLAY
+       * The published content.json on GitHub (written by admin.html) wins,
+       * and a draft still sitting in this browser's IndexedDB wins over
+       * that — so your own machine always shows your newest upload, while
+       * every visitor gets the GitHub version on refresh.
+       * ================================================================== */
+
+      const CONTENT_DB = 'yijun-admin';
+
+      /* 内容数据源：GitHub 仓库里的 content.json（admin.html“保存并发布”时写入）。
+         时间戳参数用于跳过 CDN 缓存，保证刷新即看到最新。 */
+      var CONTENT_URL =
+        'https://raw.githubusercontent.com/hellenyijun-hub/hellenyijun-hub.github.io/main/content.json';
+
+      function readRemote() {
+        try {
+          return fetch(CONTENT_URL + '?t=' + Date.now(), { cache: 'no-store' })
+            .then(function (res) {
+              if (!res.ok) return null;
+              return res.json().catch(function () {
+                return null;
+              });
+            })
+            .catch(function () {
+              return null;
+            });
+        } catch (error) {
+          return Promise.resolve(null);
+        }
+      }
+
+      /** The draft admin.html keeps in IndexedDB on this machine, if any. */
+      function readDraft() {
+        return new Promise(function (resolve) {
+          if (!window.indexedDB) {
+            resolve(null);
+            return;
+          }
+          let settled = false;
+          const done = (value) => {
+            if (!settled) {
+              settled = true;
+              resolve(value);
+            }
+          };
+          // Some file:// contexts leave the open request pending forever.
+          window.setTimeout(function () {
+            done(null);
+          }, 1200);
+          try {
+            const req = window.indexedDB.open(CONTENT_DB, 1);
+            req.onupgradeneeded = function () {
+              const db = req.result;
+              if (!db.objectStoreNames.contains('content')) db.createObjectStore('content');
+            };
+            req.onerror = function () {
+              done(null);
+            };
+            req.onsuccess = function () {
+              try {
+                const get = req.result.transaction('content', 'readonly').objectStore('content').get('content');
+                get.onsuccess = function () {
+                  done(get.result || null);
+                };
+                get.onerror = function () {
+                  done(null);
+                };
+              } catch (error) {
+                done(null);
+              }
+            };
+          } catch (error) {
+            done(null);
+          }
+        });
+      }
+
+      function normalizeWorks(list) {
+        if (!Array.isArray(list)) return [];
+        return list
+          .filter(function (w) {
+            return w && (w.image || w.title);
+          })
+          .map(function (w, i) {
+            return {
+              num: w.num || String(i + 1).padStart(2, '0'),
+              cat: String(w.cat || '').toUpperCase(),
+              catEn: String(w.catEn || '').toUpperCase(),
+              catCn: w.catCn || '',
+              title: w.title || '',
+              title2: w.title2 || '',
+              year: w.year || '',
+              link: w.link || '',
+              image: w.image || null,
+            };
+          });
+      }
+
+      function mergeContent(remote, draft) {
+        const remoteWorks = normalizeWorks(remote && remote.works);
+        const draftWorks = normalizeWorks(draft && draft.works);
+        const source = (draft && draft.portrait) || (remote && remote.portrait) || {};
+        return {
+          works: draftWorks.length ? draftWorks : remoteWorks,
+          portrait: {
+            dark: source.dark || null,
+            light: source.light || null,
+          },
+        };
+      }
+
+      const ContentContext = React.createContext({ works: [], portrait: { dark: null, light: null } });
+
+      function useContent() {
+        return React.useContext(ContentContext);
+      }
+
+      function ContentProvider({ children }) {
+        const [content, setContent] = useState(function () {
+          return mergeContent(null, null);
+        });
+
+        useEffect(function () {
+          let alive = true;
+          Promise.all([readRemote(), readDraft()]).then(function (results) {
+            if (alive) setContent(mergeContent(results[0], results[1]));
+          });
+          return function () {
+            alive = false;
+          };
+        }, []);
+
+        return <ContentContext.Provider value={content}>{children}</ContentContext.Provider>;
+      }
+
+      /* ====================================================================
+       * ICONS
+       * ================================================================== */
+
+      const svgIcon = (className, children) => (
+        <svg
+          className={className}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          {children}
+        </svg>
+      );
+
+      const ArrowUpRight = ({ className }) => svgIcon(className, <path d="M7 17 17 7M7 7h10v10" />);
+      const ArrowRight = ({ className }) => svgIcon(className, <path d="M4 12h15M13 6l6 6-6 6" />);
+      const ArrowDown = ({ className }) => svgIcon(className, <path d="M12 4v15M6 13l6 6 6-6" />);
+      const ArrowUp = ({ className }) => svgIcon(className, <path d="M12 19V5M5 12l7-7 7 7" />);
+      const Mail = ({ className }) =>
+        svgIcon(
+          className,
+          <g>
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+            <path d="m22 7-10 6L2 7" />
+          </g>
+        );
+
+      /* ====================================================================
+       * MAGIC RINGS — React Bits (JavaScript + CSS variant)
+       * https://reactbits.dev  ·  integrated behind the hero portrait
+       *
+       * One deliberate change from the published source: `import * as THREE
+       * from 'three'` became a lazy `import('three')`. three is ~600 KB, and a
+       * static import would mean (a) a CDN hiccup takes the WHOLE page down
+       * instead of just this effect, (b) every visitor blocks first paint on
+       * it, (c) visitors without WebGL2 download it for nothing.
+       * ================================================================== */
+
+      const MAGIC_RINGS_VERTEX = `
+void main() {
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+      const MAGIC_RINGS_FRAGMENT = `
+precision highp float;
+
+uniform float uTime, uAttenuation, uLineThickness;
+uniform float uBaseRadius, uRadiusStep, uScaleRate;
+uniform float uOpacity, uNoiseAmount, uRotation, uRingGap;
+uniform float uFadeIn, uFadeOut;
+uniform float uMouseInfluence, uHoverAmount, uHoverScale, uParallax, uBurst;
+uniform float uCoverageAlpha;
+uniform vec2 uResolution, uMouse;
+uniform vec3 uColor, uColorTwo;
+uniform int uRingCount;
+
+const float HP = 1.5707963;
+const float CYCLE = 3.45;
+
+float fade(float t) {
+  return t < uFadeIn ? smoothstep(0.0, uFadeIn, t) : 1.0 - smoothstep(uFadeOut, CYCLE - 0.2, t);
+}
+
+float ring(vec2 p, float ri, float cut, float t0, float px) {
+  float t = mod(uTime + t0, CYCLE);
+  float r = ri + t / CYCLE * uScaleRate;
+  float d = abs(length(p) - r);
+  float a = atan(abs(p.y), abs(p.x)) / HP;
+  float th = max(1.0 - a, 0.5) * px * uLineThickness;
+  float h = (1.0 - smoothstep(th, th * 1.5, d)) + 1.0;
+  d += pow(cut * a, 3.0) * r;
+  return h * exp(-uAttenuation * d) * fade(t);
+}
+
+void main() {
+  float px = 1.0 / min(uResolution.x, uResolution.y);
+  vec2 p = (gl_FragCoord.xy - 0.5 * uResolution.xy) * px;
+  float cr = cos(uRotation), sr = sin(uRotation);
+  p = mat2(cr, -sr, sr, cr) * p;
+  p -= uMouse * uMouseInfluence;
+  float sc = mix(1.0, uHoverScale, uHoverAmount) + uBurst * 0.3;
+  p /= sc;
+  vec3 c = vec3(0.0);
+  float coverage = 0.0;
+  float rcf = max(float(uRingCount) - 1.0, 1.0);
+  for (int i = 0; i < 10; i++) {
+    if (i >= uRingCount) break;
+    float fi = float(i);
+    vec2 pr = p - fi * uParallax * uMouse;
+    vec3 rc = mix(uColor, uColorTwo, fi / rcf);
+    float ringAmount = ring(pr, uBaseRadius + fi * uRadiusStep, pow(uRingGap, fi), i == 0 ? 0.0 : 2.95 * fi, px);
+    c = mix(c, rc, vec3(ringAmount));
+    coverage = max(coverage, ringAmount);
+  }
+  c *= 1.0 + uBurst * 2.0;
+  float n = fract(sin(dot(gl_FragCoord.xy + uTime * 100.0, vec2(12.9898, 78.233))) * 43758.5453);
+  c += (n - 0.5) * uNoiseAmount;
+  float intensity = max(c.r, max(c.g, c.b));
+  vec3 emissiveColor = intensity > 0.0001 ? clamp(c / intensity, 0.0, 1.0) : vec3(0.0);
+  vec3 outputColor = mix(emissiveColor, clamp(c, 0.0, 1.0), uCoverageAlpha);
+  float outputAlpha = mix(intensity, coverage, uCoverageAlpha);
+  gl_FragColor = vec4(outputColor, clamp(outputAlpha * uOpacity, 0.0, 1.0));
+}
+`;
+
+      /** The WebGL half. Only mounted once `three` has actually been fetched. */
+      function MagicRingsCanvas({ three, ...props }) {
+        const color = props.color || '#fc42ff';
+        const colorTwo = props.colorTwo || '#42fcff';
+        const speed = props.speed == null ? 1 : props.speed;
+        const ringCount = props.ringCount == null ? 6 : props.ringCount;
+        const attenuation = props.attenuation == null ? 10 : props.attenuation;
+        const lineThickness = props.lineThickness == null ? 2 : props.lineThickness;
+        const baseRadius = props.baseRadius == null ? 0.35 : props.baseRadius;
+        const radiusStep = props.radiusStep == null ? 0.1 : props.radiusStep;
+        const scaleRate = props.scaleRate == null ? 0.1 : props.scaleRate;
+        const opacity = props.opacity == null ? 1 : props.opacity;
+        const blur = props.blur == null ? 0 : props.blur;
+        const noiseAmount = props.noiseAmount == null ? 0.1 : props.noiseAmount;
+        const rotation = props.rotation == null ? 0 : props.rotation;
+        const ringGap = props.ringGap == null ? 1.5 : props.ringGap;
+        const fadeIn = props.fadeIn == null ? 0.7 : props.fadeIn;
+        const fadeOut = props.fadeOut == null ? 0.5 : props.fadeOut;
+        const followMouse = !!props.followMouse;
+        const mouseInfluence = props.mouseInfluence == null ? 0.2 : props.mouseInfluence;
+        const hoverScale = props.hoverScale == null ? 1.2 : props.hoverScale;
+        const parallax = props.parallax == null ? 0.05 : props.parallax;
+        const clickBurst = !!props.clickBurst;
+        const alphaMode = props.alphaMode || 'luminance';
+
+        const mountRef = useRef(null);
+        const propsRef = useRef({});
+        const mouseRef = useRef([0, 0]);
+        const smoothMouseRef = useRef([0, 0]);
+        const hoverAmountRef = useRef(0);
+        const isHoveredRef = useRef(false);
+        const burstRef = useRef(0);
+
+        propsRef.current = {
+          color: color,
+          colorTwo: colorTwo,
+          speed: speed,
+          ringCount: ringCount,
+          attenuation: attenuation,
+          lineThickness: lineThickness,
+          baseRadius: baseRadius,
+          radiusStep: radiusStep,
+          scaleRate: scaleRate,
+          opacity: opacity,
+          noiseAmount: noiseAmount,
+          rotation: rotation,
+          ringGap: ringGap,
+          fadeIn: fadeIn,
+          fadeOut: fadeOut,
+          followMouse: followMouse,
+          mouseInfluence: mouseInfluence,
+          hoverScale: hoverScale,
+          parallax: parallax,
+          clickBurst: clickBurst,
+          alphaMode: alphaMode,
+        };
+
+        useEffect(
+          function () {
+            const mount = mountRef.current;
+            if (!mount) return undefined;
+
+            let renderer;
+            try {
+              renderer = new three.WebGLRenderer({ alpha: true });
+            } catch (error) {
+              return undefined;
+            }
+
+            if (!renderer.capabilities.isWebGL2) {
+              renderer.dispose();
+              return undefined;
+            }
+
+            renderer.setClearColor(0x000000, 0);
+            mount.appendChild(renderer.domElement);
+
+            const scene = new three.Scene();
+            const camera = new three.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0.1, 10);
+            camera.position.z = 1;
+
+            const uniforms = {
+              uTime: { value: 0 },
+              uAttenuation: { value: 0 },
+              uResolution: { value: new three.Vector2() },
+              uColor: { value: new three.Color() },
+              uColorTwo: { value: new three.Color() },
+              uLineThickness: { value: 0 },
+              uBaseRadius: { value: 0 },
+              uRadiusStep: { value: 0 },
+              uScaleRate: { value: 0 },
+              uRingCount: { value: 0 },
+              uOpacity: { value: 1 },
+              uNoiseAmount: { value: 0 },
+              uRotation: { value: 0 },
+              uRingGap: { value: 1.6 },
+              uFadeIn: { value: 0.5 },
+              uFadeOut: { value: 0.75 },
+              uMouse: { value: new three.Vector2() },
+              uMouseInfluence: { value: 0 },
+              uHoverAmount: { value: 0 },
+              uHoverScale: { value: 1 },
+              uParallax: { value: 0 },
+              uBurst: { value: 0 },
+              uCoverageAlpha: { value: 0 },
+            };
+
+            const material = new three.ShaderMaterial({
+              vertexShader: MAGIC_RINGS_VERTEX,
+              fragmentShader: MAGIC_RINGS_FRAGMENT,
+              uniforms: uniforms,
+              transparent: true,
+            });
+            const quad = new three.Mesh(new three.PlaneGeometry(1, 1), material);
+            scene.add(quad);
+
+            const resize = function () {
+              const w = mount.clientWidth;
+              const h = mount.clientHeight;
+              const dpr = Math.min(window.devicePixelRatio, 2);
+              renderer.setSize(w, h);
+              renderer.setPixelRatio(dpr);
+              uniforms.uResolution.value.set(w * dpr, h * dpr);
+            };
+            resize();
+            window.addEventListener('resize', resize);
+
+            const ro = new ResizeObserver(resize);
+            ro.observe(mount);
+
+            const onMouseMove = function (e) {
+              const rect = mount.getBoundingClientRect();
+              mouseRef.current[0] = (e.clientX - rect.left) / rect.width - 0.5;
+              mouseRef.current[1] = -((e.clientY - rect.top) / rect.height - 0.5);
+            };
+            const onMouseEnter = function () {
+              isHoveredRef.current = true;
+            };
+            const onMouseLeave = function () {
+              isHoveredRef.current = false;
+              mouseRef.current[0] = 0;
+              mouseRef.current[1] = 0;
+            };
+            const onClick = function () {
+              burstRef.current = 1;
+            };
+
+            mount.addEventListener('mousemove', onMouseMove);
+            mount.addEventListener('mouseenter', onMouseEnter);
+            mount.addEventListener('mouseleave', onMouseLeave);
+            mount.addEventListener('click', onClick);
+
+            let frameId = 0;
+            let isVisible = false;
+            let isPageVisible = !document.hidden;
+            let elapsed = 0;
+            let lastT = 0;
+
+            const animate = function (t) {
+              frameId = requestAnimationFrame(animate);
+              const p = propsRef.current;
+
+              const dt = lastT === 0 ? 0 : Math.min(t - lastT, 100);
+              lastT = t;
+              elapsed += dt * 0.001 * p.speed;
+
+              smoothMouseRef.current[0] += (mouseRef.current[0] - smoothMouseRef.current[0]) * 0.08;
+              smoothMouseRef.current[1] += (mouseRef.current[1] - smoothMouseRef.current[1]) * 0.08;
+              hoverAmountRef.current += ((isHoveredRef.current ? 1 : 0) - hoverAmountRef.current) * 0.08;
+              burstRef.current *= 0.95;
+              if (burstRef.current < 0.001) burstRef.current = 0;
+
+              uniforms.uTime.value = elapsed;
+              uniforms.uAttenuation.value = p.attenuation;
+              uniforms.uColor.value.set(p.color);
+              uniforms.uColorTwo.value.set(p.colorTwo);
+              uniforms.uLineThickness.value = p.lineThickness;
+              uniforms.uBaseRadius.value = p.baseRadius;
+              uniforms.uRadiusStep.value = p.radiusStep;
+              uniforms.uScaleRate.value = p.scaleRate;
+              uniforms.uRingCount.value = p.ringCount;
+              uniforms.uOpacity.value = p.opacity;
+              uniforms.uNoiseAmount.value = p.noiseAmount;
+              uniforms.uRotation.value = (p.rotation * Math.PI) / 180;
+              uniforms.uRingGap.value = p.ringGap;
+              uniforms.uFadeIn.value = p.fadeIn;
+              uniforms.uFadeOut.value = p.fadeOut;
+              uniforms.uMouse.value.set(smoothMouseRef.current[0], smoothMouseRef.current[1]);
+              uniforms.uMouseInfluence.value = p.followMouse ? p.mouseInfluence : 0;
+              uniforms.uHoverAmount.value = hoverAmountRef.current;
+              uniforms.uHoverScale.value = p.hoverScale;
+              uniforms.uParallax.value = p.parallax;
+              uniforms.uBurst.value = p.clickBurst ? burstRef.current : 0;
+              uniforms.uCoverageAlpha.value = p.alphaMode === 'coverage' ? 1 : 0;
+
+              renderer.render(scene, camera);
+            };
+
+            const tryStart = function () {
+              if (isVisible && isPageVisible && frameId === 0) {
+                lastT = 0;
+                frameId = requestAnimationFrame(animate);
+              }
+            };
+            const tryStop = function () {
+              if (frameId !== 0) {
+                cancelAnimationFrame(frameId);
+                frameId = 0;
+              }
+            };
+
+            const io = new IntersectionObserver(
+              function (entries) {
+                isVisible = entries[0].isIntersecting;
+                if (isVisible) tryStart();
+                else tryStop();
+              },
+              { threshold: 0 }
+            );
+            io.observe(mount);
+
+            const onVisibility = function () {
+              isPageVisible = !document.hidden;
+              if (isPageVisible) tryStart();
+              else tryStop();
+            };
+            document.addEventListener('visibilitychange', onVisibility);
+
+            tryStart();
+
+            return function () {
+              tryStop();
+              io.disconnect();
+              document.removeEventListener('visibilitychange', onVisibility);
+              window.removeEventListener('resize', resize);
+              ro.disconnect();
+              mount.removeEventListener('mousemove', onMouseMove);
+              mount.removeEventListener('mouseenter', onMouseEnter);
+              mount.removeEventListener('mouseleave', onMouseLeave);
+              mount.removeEventListener('click', onClick);
+              if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
+              renderer.dispose();
+              material.dispose();
+              quad.geometry.dispose();
+            };
+          },
+          [three]
+        );
+
+        return (
+          <div
+            ref={mountRef}
+            className="magic-rings-container"
+            style={blur > 0 ? { filter: 'blur(' + blur + 'px)' } : undefined}
+          />
+        );
+      }
+
+      function MagicRings(props) {
+        const blur = props.blur == null ? 0 : props.blur;
+        const [three, setThree] = useState(null);
+
+        useEffect(function () {
+          let alive = true;
+          import('three')
+            .then(function (mod) {
+              if (alive) setThree(mod);
+            })
+            .catch(function () {
+              /* No three, no rings — the hero keeps working. */
+            });
+          return function () {
+            alive = false;
+          };
+        }, []);
+
+        const style = blur > 0 ? { filter: 'blur(' + blur + 'px)' } : undefined;
+
+        if (!three) return <div className="magic-rings-container" style={style} />;
+        return <MagicRingsCanvas three={three} {...props} />;
+      }
+
+      /* ====================================================================
+       * PRIMITIVES
+       * ================================================================== */
+
+      const EASE = [0.25, 0.1, 0.25, 1];
+
+      function resolveMotion(as) {
+        const map = motion;
+        return map[as] || motion.div;
+      }
+
+      function FadeIn({ children, as = 'div', delay = 0, duration = 0.7, x = 0, y = 30, className, style }) {
+        const MotionTag = useMemo(() => resolveMotion(as), [as]);
+        return (
+          <MotionTag
+            className={className}
+            style={style}
+            initial={{ opacity: 0, x, y }}
+            whileInView={{ opacity: 1, x: 0, y: 0 }}
+            viewport={{ once: true, margin: '50px', amount: 0 }}
+            transition={{ duration, delay, ease: EASE }}
+          >
+            {children}
+          </MotionTag>
+        );
+      }
+
+      function Magnet({ children, padding = 120, magnetStrength = 5 }) {
+        const ref = useRef(null);
+        const last = useRef({ active: false, x: 0, y: 0 });
+        const [active, setActive] = useState(false);
+        const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+        useEffect(() => {
+          const onMove = (e) => {
+            const el = ref.current;
+            if (!el) return;
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            const inside =
+              Math.abs(cx - e.clientX) < r.width / 2 + padding &&
+              Math.abs(cy - e.clientY) < r.height / 2 + padding;
+            const nx = inside ? (e.clientX - cx) / magnetStrength : 0;
+            const ny = inside ? (e.clientY - cy) / magnetStrength : 0;
+            const p = last.current;
+            if (p.active === inside && Math.abs(p.x - nx) < 0.05 && Math.abs(p.y - ny) < 0.05) return;
+            last.current = { active: inside, x: nx, y: ny };
+            setActive(inside);
+            setOffset({ x: nx, y: ny });
+          };
+          window.addEventListener('mousemove', onMove);
+          return () => window.removeEventListener('mousemove', onMove);
+        }, [padding, magnetStrength]);
+
+        return (
+          <div ref={ref}>
+            <div
+              style={{
+                transform: 'translate3d(' + offset.x + 'px, ' + offset.y + 'px, 0)',
+                transition: active ? 'transform .3s ease-out' : 'transform .6s ease-in-out',
+                willChange: 'transform',
+              }}
+            >
+              {children}
+            </div>
+          </div>
+        );
+      }
+
+      function Char({ progress, range, children }) {
+        const opacity = useTransform(progress, range, [0.2, 1]);
+        return (
+          <span className="relative inline-block whitespace-pre">
+            <span className="opacity-0">{children}</span>
+            <motion.span className="absolute left-0 top-0" style={{ opacity }}>
+              {children}
+            </motion.span>
+          </span>
+        );
+      }
+
+      function AnimatedText({ text, className, style }) {
+        const ref = useRef(null);
+        const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.35'] });
+        if (!text) return null;
+        const chars = Array.from(text);
+        return (
+          <p ref={ref} className={className} style={style}>
+            {chars.map((c, i) => (
+              <Char key={c + i} progress={scrollYProgress} range={[i / chars.length, (i + 1) / chars.length]}>
+                {c}
+              </Char>
+            ))}
+          </p>
+        );
+      }
+
+      function ContactButton({ label = 'Contact Me', href = '#contact' }) {
+        return (
+          <a
+            href={href}
+            className="inline-flex items-center justify-center rounded-full px-8 py-3 text-xs font-medium uppercase tracking-widest text-white transition-transform duration-200 hover:scale-[1.03] sm:px-10 sm:py-3.5 sm:text-sm"
+            style={{
+              background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
+              boxShadow: '0px 4px 4px rgba(181, 1, 167, 0.25), 4px 4px 12px #7721B1 inset',
+              outline: '2px solid #FFFFFF',
+              outlineOffset: '-3px',
+            }}
+          >
+            {label}
+          </a>
+        );
+      }
+
+      function GhostButton({ label, href = '#contact', icon }) {
+        return (
+          <a
+            href={href}
+            className="group rim inline-flex items-center gap-2 rounded-full border-2 px-7 py-3 text-xs font-medium uppercase tracking-widest transition-colors duration-200 hover:bg-[var(--panel)] sm:text-sm"
+          >
+            {label}
+            {icon}
+          </a>
+        );
+      }
+
+      /** Section heading: eyebrow + gradient title + sub. */
+      function SectionHead({ eyebrow, title, sub, tint, align = 'left' }) {
+        const centered = align === 'center';
+        return (
+          <div className={centered ? 'text-center' : ''} style={{ maxWidth: centered ? 780 : 720, marginLeft: centered ? 'auto' : 0, marginRight: centered ? 'auto' : 0 }}>
+            <FadeIn y={24}>
+              <p className="text-[11px] font-medium uppercase tracking-[0.42em] sm:text-xs" style={{ color: tint }}>
+                {eyebrow}
+              </p>
+            </FadeIn>
+            <FadeIn as="h2" delay={0.08} y={30}>
+              <span
+                className="hero-heading mt-3 block font-black leading-[1.12] tracking-tight"
+                style={{ fontSize: 'clamp(2rem, 5.4vw, 4.6rem)' }}
+              >
+                {title}
+              </span>
+            </FadeIn>
+            {sub ? (
+              <FadeIn delay={0.16} y={20}>
+                <p className="txt-dim mt-4 text-sm leading-relaxed sm:text-base md:text-lg">{sub}</p>
+              </FadeIn>
+            ) : null}
+          </div>
+        );
+      }
+
+      /* ====================================================================
+       * THE CARTOON IP — one character, eight poses, threaded through the page
+       * ================================================================== */
+
+      function Face() {
+        return (
+          <g className="cj-head">
+            <circle cx="170" cy="182" r="98" fill="#3B2A20" />
+            <circle cx="170" cy="190" r="90" fill="#FFE0C2" />
+            <ellipse cx="82" cy="198" rx="12" ry="16" fill="#F6CFA4" />
+            <ellipse cx="258" cy="198" rx="12" ry="16" fill="#F6CFA4" />
+            <path d="M131 164 Q145 156 159 162" stroke="#3B2A20" strokeWidth="6" strokeLinecap="round" fill="none" />
+            <path d="M181 162 Q195 156 209 164" stroke="#3B2A20" strokeWidth="6" strokeLinecap="round" fill="none" />
+            <ellipse cx="143" cy="194" rx="13" ry="15" fill="#2A1C14" />
+            <ellipse cx="197" cy="194" rx="13" ry="15" fill="#2A1C14" />
+            <circle cx="147" cy="188" r="5" fill="#FFFFFF" />
+            <circle cx="201" cy="188" r="5" fill="#FFFFFF" />
+            <circle cx="139" cy="200" r="2.4" fill="#FFFFFF" />
+            <circle cx="193" cy="200" r="2.4" fill="#FFFFFF" />
+            <ellipse cx="170" cy="216" rx="3.4" ry="2.6" fill="#F2C79B" />
+            <ellipse cx="122" cy="220" rx="13" ry="8" fill="rgba(244,150,120,.42)" />
+            <ellipse cx="218" cy="220" rx="13" ry="8" fill="rgba(244,150,120,.42)" />
+            <path d="M157 230 Q170 243 183 230" stroke="#C05F4A" strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path
+              d="M78 198 C78 108 120 84 170 84 C220 84 262 108 262 198 C250 152 226 142 196 150 L170 158 L144 150 C114 142 90 152 78 198 Z"
+              fill="#3B2A20"
+            />
+            <path d="M80 188 Q67 214 82 232 Q97 210 88 190 Z" fill="#3B2A20" />
+            <path d="M260 188 Q273 214 258 232 Q243 210 252 190 Z" fill="#3B2A20" />
+            <path d="M170 84 C165 60 186 56 194 71" stroke="#3B2A20" strokeWidth="7" strokeLinecap="round" fill="none" />
+            <path d="M118 122 Q158 134 200 118" stroke="#5A4030" strokeWidth="5" strokeLinecap="round" fill="none" opacity=".75" />
+          </g>
+        );
+      }
+
+      function ArmSide({ side }) {
+        const left = side === 'l';
+        return (
+          <g className={left ? 'cj-arm-l' : 'cj-arm-r'}>
+            <rect x={left ? 86 : 224} y="312" width="30" height="110" rx="15" fill="#EFE7DA" />
+            <circle cx={left ? 101 : 239} cy="426" r="14" fill="#FFE0C2" />
+          </g>
+        );
+      }
+
+      /** Arm bent upward, hand at (252,246) — used when the character holds something. */
+      function ArmRaised() {
+        return (
+          <g className="cj-arm-r">
+            <path d="M232 324 Q268 306 254 250" stroke="#EFE7DA" strokeWidth="30" strokeLinecap="round" fill="none" />
+            <circle cx="253" cy="245" r="14" fill="#FFE0C2" />
+          </g>
+        );
+      }
+
+      function ArmHug({ flip }) {
+        const t = flip ? 'translate(340,0) scale(-1,1)' : '';
+        return (
+          <g className="cj-arm-l" transform={t}>
+            <path d="M104 344 Q118 268 156 254" stroke="#EFE7DA" strokeWidth="28" strokeLinecap="round" fill="none" />
+            <circle cx="160" cy="252" r="13" fill="#FFE0C2" />
+          </g>
+        );
+      }
+
+      /** Both arms bent inward, hands at (152,336) — holding a box in front. */
+      function ArmHold({ flip }) {
+        const t = flip ? 'translate(340,0) scale(-1,1)' : '';
+        return (
+          <g transform={t}>
+            <path d="M100 340 Q120 320 150 336" stroke="#EFE7DA" strokeWidth="28" strokeLinecap="round" fill="none" />
+            <circle cx="152" cy="336" r="13" fill="#FFE0C2" />
+          </g>
+        );
+      }
+
+      function StandingBody() {
+        return (
+          <g>
+            <rect x="130" y="440" width="36" height="78" rx="18" fill="#EDE4D6" />
+            <rect x="174" y="440" width="36" height="78" rx="18" fill="#E3D9C8" />
+            <ellipse cx="148" cy="520" rx="27" ry="13" fill="#B9855A" />
+            <ellipse cx="192" cy="520" rx="27" ry="13" fill="#A9744A" />
+            <path
+              d="M110 344 C110 306 132 288 170 288 C208 288 230 306 230 344 L234 450 C234 468 214 474 170 474 C126 474 106 468 106 450 Z"
+              fill="#F3ECE0"
+            />
+            <path d="M142 290 L170 356 L198 290 Z" fill="#FFFFFF" />
+            <path d="M136 288 L170 358 L152 288 Z" fill="#E9DFCF" />
+            <path d="M204 288 L170 358 L188 288 Z" fill="#E9DFCF" />
+            <rect x="158" y="270" width="24" height="28" rx="10" fill="#F6CFA4" />
+          </g>
+        );
+      }
+
+      function SeatedBody() {
+        return (
+          <g>
+            <rect x="98" y="396" width="74" height="44" rx="22" fill="#EDE4D6" />
+            <rect x="168" y="396" width="74" height="44" rx="22" fill="#E3D9C8" />
+            <ellipse cx="104" cy="418" rx="22" ry="15" fill="#B9855A" />
+            <ellipse cx="236" cy="418" rx="22" ry="15" fill="#A9744A" />
+            <path
+              d="M112 300 C112 268 132 252 170 252 C208 252 228 268 228 300 L232 392 C232 408 214 414 170 414 C126 414 108 408 108 392 Z"
+              fill="#F3ECE0"
+            />
+            <path d="M142 254 L170 316 L198 254 Z" fill="#FFFFFF" />
+            <path d="M136 252 L170 318 L152 252 Z" fill="#E9DFCF" />
+            <path d="M204 252 L170 318 L188 252 Z" fill="#E9DFCF" />
+            <g className="cj-arm-l">
+              <rect x="88" y="276" width="28" height="96" rx="14" fill="#EFE7DA" />
+              <circle cx="102" cy="376" r="13" fill="#FFE0C2" />
+            </g>
+            <g className="cj-arm-r">
+              <rect x="224" y="276" width="28" height="96" rx="14" fill="#EFE7DA" />
+              <circle cx="238" cy="376" r="13" fill="#FFE0C2" />
+            </g>
+            <rect x="158" y="234" width="24" height="26" rx="10" fill="#F6CFA4" />
+          </g>
+        );
+      }
+
+      function PropBrush() {
+        return (
+          <g transform="translate(253,238) rotate(-18)">
+            <rect x="-5" y="-78" width="10" height="92" rx="5" fill="#B9855A" />
+            <rect x="-8" y="6" width="16" height="15" rx="3" fill="#C9A227" />
+            <path d="M-9 21 L9 21 L6 60 Q0 70 -6 60 Z" fill="var(--accent)" />
+          </g>
+        );
+      }
+
+      function PropOrb() {
+        return (
+          <g transform="translate(286,236)">
+            <circle r="52" fill="var(--ai)" opacity=".22" />
+            <circle r="30" fill="var(--ai)" />
+            <circle cx="-9" cy="-9" r="8" fill="#FFFFFF" opacity=".55" />
+            <ellipse rx="47" ry="14" fill="none" stroke="var(--accent)" strokeWidth="3" transform="rotate(-18)" />
+            <circle cx="-46" cy="-38" r="4" fill="var(--ai)" />
+            <circle cx="40" cy="-52" r="6" fill="var(--ai)" />
+            <circle cx="52" cy="26" r="3.5" fill="var(--ai)" />
+          </g>
+        );
+      }
+
+      function PropLaptop() {
+        return (
+          <g transform="translate(170,398)">
+            <path d="M-74 0 L74 0 L58 -70 L-58 -70 Z" fill="#2A2A2E" />
+            <path d="M-58 -64 L58 -64 L68 -8 L-68 -8 Z" fill="var(--sage)" opacity=".9" />
+            <rect x="-92" y="0" width="184" height="12" rx="6" fill="#3A3A40" />
+            <rect x="-48" y="-56" width="72" height="6" rx="3" fill="#FFFFFF" opacity=".55" />
+            <rect x="-48" y="-44" width="96" height="6" rx="3" fill="#FFFFFF" opacity=".35" />
+            <rect x="-48" y="-32" width="58" height="6" rx="3" fill="#FFFFFF" opacity=".35" />
+          </g>
+        );
+      }
+
+      function PropCloud({ scale = 1 }) {
+        return (
+          <g transform={'translate(170,232) scale(' + scale + ')'}>
+            <path
+              d="M-58 30 a30 30 0 0 1 -3 -59 a42 42 0 0 1 80 -12 a32 32 0 0 1 44 26 a34 34 0 0 1 -5 45 z"
+              fill="var(--psych)"
+            />
+            <ellipse cx="-22" cy="2" rx="4" ry="5" fill="#8A6A5A" />
+            <ellipse cx="22" cy="2" rx="4" ry="5" fill="#8A6A5A" />
+            <path d="M-9 12 Q0 19 9 12" stroke="#8A6A5A" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+          </g>
+        );
+      }
+
+      function PropBox() {
+        return (
+          <g transform="translate(170,340)">
+            <rect x="-52" y="-38" width="104" height="76" rx="18" fill="var(--product)" />
+            <rect x="-52" y="-38" width="104" height="22" rx="11" fill="#FFFFFF" opacity=".35" />
+            <rect x="-30" y="2" width="60" height="8" rx="4" fill="#FFFFFF" opacity=".7" />
+            <circle cx="34" cy="-20" r="7" fill="#FFFFFF" opacity=".7" />
+          </g>
+        );
+      }
+
+      /**
+       * pose: hero | brush | ai | coding | cloud | product | sitting | avatar
+       */
+      function Character({ pose = 'hero', className = '', style }) {
+        if (pose === 'avatar') {
+          return (
+            <svg className={className} style={style} viewBox="52 74 236 236" role="img" aria-label="YIJUN">
+              <defs>
+                <clipPath id="cjAvatarClip">
+                  <circle cx="170" cy="192" r="112" />
+                </clipPath>
+              </defs>
+              <circle cx="170" cy="192" r="112" fill="var(--accent)" opacity=".18" />
+              <g clipPath="url(#cjAvatarClip)">
+                <rect x="58" y="80" width="224" height="224" fill="var(--panel)" />
+                <Face />
+              </g>
+            </svg>
+          );
+        }
+
+        const seated = pose === 'coding' || pose === 'sitting';
+        const hugging = pose === 'cloud';
+        const holding = pose === 'brush' || pose === 'product';
+        const viewBox = seated ? '0 0 340 470' : '0 0 340 560';
+
+        return (
+          <svg className={className} style={style} viewBox={viewBox} role="img" aria-label="YIJUN 的卡通形象">
+            <ellipse
+              cx="170"
+              cy={seated ? 430 : 526}
+              rx="104"
+              ry="24"
+              fill="var(--accent)"
+              style={{ opacity: 'var(--char-glow)' }}
+            />
+            {seated ? <SeatedBody /> : <StandingBody />}
+            {seated ? null : pose === 'cloud' ? (
+              <g>
+                <ArmHug />
+                <ArmHug flip />
+              </g>
+            ) : pose === 'product' ? (
+              <g>
+                <ArmHold />
+                <ArmHold flip />
+              </g>
+            ) : pose === 'brush' ? (
+              <g>
+                <ArmRaised />
+                <ArmSide side="l" />
+              </g>
+            ) : (
+              <g>
+                <ArmSide side="r" />
+                <ArmSide side="l" />
+              </g>
+            )}
+            {pose === 'brush' ? <PropBrush /> : null}
+            {pose === 'product' ? <PropBox /> : null}
+            {pose === 'ai' ? <PropOrb /> : null}
+            {pose === 'cloud' ? <PropCloud /> : null}
+            {pose === 'coding' ? <PropLaptop /> : null}
+            {seated ? (
+              <g transform="translate(0,-48)">
+                <Face />
+              </g>
+            ) : (
+              <Face />
+            )}
+          </svg>
+        );
+      }
+
+      /* ====================================================================
+       * WORK POSTERS — your five categories, drawn (used in the stream + cards)
+       * ================================================================== */
+
+      const POSTERS = [
+        {
+          bg: 'var(--psych)',
+          ink: '#7A4A3C',
+          art: (
+            <g>
+              <circle cx="312" cy="132" r="78" fill="#EFB6A4" opacity=".75" />
+              <circle cx="86" cy="430" r="112" fill="#FFFFFF" opacity=".35" />
+              <path
+                d="M200 268 C200 222 160 206 160 172 c0-26 20-46 46-46 22 0 39 14 44 35 5-21 22-35 44-35 26 0 46 20 46 46 0 34-40 50-40 96z"
+                fill="#C05F4A"
+                opacity=".9"
+              />
+            </g>
+          ),
+        },
+        {
+          bg: 'var(--sage)',
+          ink: '#3E5240',
+          art: (
+            <g>
+              <rect x="52" y="150" width="296" height="240" rx="26" fill="#FFFFFF" opacity=".42" />
+              <path
+                d="M104 336 L154 268 L198 312 L252 224 L300 340"
+                stroke="#FFFFFF"
+                strokeWidth="14"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="104" cy="336" r="9" fill="#FFFFFF" />
+              <circle cx="154" cy="268" r="9" fill="#FFFFFF" />
+              <circle cx="198" cy="312" r="9" fill="#FFFFFF" />
+              <circle cx="252" cy="224" r="9" fill="#FFFFFF" />
+              <circle cx="300" cy="340" r="9" fill="#FFFFFF" />
+            </g>
+          ),
+        },
+        {
+          bg: 'var(--product)',
+          ink: '#8A5A2E',
+          art: (
+            <g>
+              <rect x="44" y="160" width="312" height="206" rx="20" fill="#FFFFFF" opacity=".5" />
+              <text x="70" y="238" fontFamily="Noto Serif SC, serif" fontWeight="900" fontSize="34" fill="#8A5A2E">世界精神</text>
+              <text x="70" y="282" fontFamily="Noto Serif SC, serif" fontWeight="900" fontSize="34" fill="#8A5A2E">卫生日</text>
+              <path d="M322 190 q30 -26 6 -54 q-22 -26 -50 -4" fill="#ED9E5C" />
+            </g>
+          ),
+        },
+        {
+          bg: 'var(--ai)',
+          ink: '#8A6A1E',
+          art: (
+            <g>
+              <g fill="#FFFFFF" opacity=".55">
+                <rect x="52" y="148" width="296" height="44" rx="12" />
+                <rect x="52" y="208" width="180" height="44" rx="12" />
+                <rect x="248" y="208" width="100" height="44" rx="12" />
+                <rect x="52" y="268" width="126" height="92" rx="12" />
+                <rect x="194" y="268" width="154" height="92" rx="12" />
+                <rect x="52" y="376" width="296" height="44" rx="12" />
+              </g>
+              <circle cx="318" cy="128" r="66" fill="#ED9E5C" opacity=".5" />
+            </g>
+          ),
+        },
+        {
+          /* Not --cream: on the warm palette that is exactly the page colour,
+             so the tile lost its edge. A slightly deeper beige reads on both. */
+          bg: '#E8DCC6',
+          ink: '#6B5844',
+          art: (
+            <g>
+              <circle cx="200" cy="286" r="106" fill="var(--sage)" />
+              <circle cx="200" cy="286" r="106" fill="none" stroke="#FFFFFF" strokeWidth="4" strokeDasharray="8 10" />
+              <path d="M200 218 l14 34 36 2 -28 22 9 36 -31 -20 -31 20 9 -36 -28 -22 36 -2z" fill="#FFFFFF" />
+              <text x="200" y="352" textAnchor="middle" fontFamily="Noto Serif SC, serif" fontWeight="700" fontSize="24" fill="#FFFFFF">社区医疗</text>
+            </g>
+          ),
+        },
+      ];
+
+      /** One poster, rendered at any container size.
+       *  `xMidYMin` keeps the number + category band visible when a wide
+       *  container (the 420x270 stream tiles) crops the portrait artwork;
+       *  the near-matching card aspect shows the poster essentially whole. */
+      function Poster({ index }) {
+        const p = POSTERS[index % POSTERS.length];
+        const w = WORKS[index % WORKS.length];
+        return (
+          <svg viewBox="0 0 400 520" preserveAspectRatio="xMidYMin slice" className="h-full w-full">
+            <rect width="400" height="520" fill={p.bg} />
+            {p.art}
+            <text x="44" y="84" fontFamily="Kanit, sans-serif" fontWeight="900" fontSize="42" fill={p.ink}>
+              {w.num}
+            </text>
+            <text x="44" y="128" fontFamily="Kanit, sans-serif" fontWeight="800" fontSize="24" fill={p.ink}>
+              {w.cat}
+            </text>
+            <text x="44" y="154" fontFamily="Kanit, sans-serif" fontWeight="800" fontSize="15" letterSpacing="4" fill={p.ink} opacity=".75">
+              {w.catEn}
+            </text>
+          </svg>
+        );
+      }
+
+      const ICONS = {
+        design: (
+          <svg viewBox="0 0 24 24" className="h-4 w-4">
+            <path d="M15 3l6 6-8 8-6-6 8-8z" fill="var(--accent)" />
+            <path d="M8 15l-4 4" stroke="var(--sage)" strokeWidth="2.6" strokeLinecap="round" />
+            <path d="M20 6l-4 4" stroke="var(--peach)" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
+        ),
+        ai: (
+          <svg viewBox="0 0 24 24" className="h-4 w-4">
+            <path d="M12 2l2.4 6.2L21 9l-5 4.2L17.6 20 12 16.2 6.4 20 8 13.2 3 9l6.6-.8L12 2z" fill="var(--ai)" />
+          </svg>
+        ),
+        code: (
+          <svg viewBox="0 0 24 24" className="h-4 w-4">
+            <rect x="2" y="4" width="20" height="16" rx="4" fill="var(--panel)" stroke="var(--ring)" strokeWidth="1.4" />
+            <path d="M9 10l-3 3 3 3M15 10l3 3-3 3" stroke="var(--sage)" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ),
+        psych: (
+          <svg viewBox="0 0 24 24" className="h-4 w-4">
+            <path d="M12 20S3 14.5 3 8.5C3 5.5 5.2 4 7.5 4 9.5 4 11 5.2 12 6.8 13 5.2 14.5 4 16.5 4 18.8 4 21 5.5 21 8.5 21 14.5 12 20 12 20z" fill="var(--peach)" />
+          </svg>
+        ),
+      };
+
+      function ThemeToggle() {
+        const [warm, setWarm] = useState(() => {
+          try {
+            return localStorage.getItem('yj-theme') === 'warm';
+          } catch (e) {
+            return false;
+          }
+        });
+
+        useEffect(() => {
+          document.documentElement.setAttribute('data-theme', warm ? 'warm' : 'dark');
+          try {
+            localStorage.setItem('yj-theme', warm ? 'warm' : 'dark');
+          } catch (e) {
+            /* ignore */
+          }
+        }, [warm]);
+
+        return (
+          <button
+            type="button"
+            onClick={() => setWarm((v) => !v)}
+            aria-label="切换深色 / 暖色模式"
+            title="切换深色 / 暖色模式"
+            className="rim grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 text-base leading-none transition-colors duration-200 hover:bg-[var(--panel)]"
+          >
+            {warm ? '◐' : '☼'}
+          </button>
+        );
+      }
+
+      function ReactionLayer({ react }) {
+        const stars = useMemo(() => {
+          const out = [];
+          for (let i = 0; i < 16; i++) {
+            out.push({
+              left: 6 + Math.random() * 84,
+              top: 4 + Math.random() * 62,
+              size: 7 + Math.random() * 6,
+              delay: Math.random() * 1.4,
+            });
+          }
+          return out;
+        }, []);
+
+        const bubbles = useMemo(() => {
+          const out = [];
+          for (let i = 0; i < 9; i++) {
+            out.push({
+              left: 6 + Math.random() * 84,
+              top: 10 + Math.random() * 62,
+              size: 16 + Math.random() * 16,
+              delay: Math.random() * 3,
+            });
+          }
+          return out;
+        }, []);
+
+        return (
+          <div className="pointer-events-none absolute inset-0 z-10">
+            <div className="absolute inset-0 transition-opacity duration-500" style={{ opacity: react === 'ai' ? 1 : 0 }}>
+              {stars.map((s, i) => (
+                <span
+                  key={i}
+                  className="absolute"
+                  style={{
+                    left: s.left + '%',
+                    top: s.top + '%',
+                    width: s.size,
+                    height: s.size,
+                    background: 'var(--ai)',
+                    clipPath:
+                      'polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)',
+                    animation: 'twinkle 1.4s ease-in-out infinite',
+                    animationDelay: s.delay + 's',
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="absolute inset-0 transition-opacity duration-500" style={{ opacity: react === 'psych' ? 1 : 0 }}>
+              {bubbles.map((b, i) => (
+                <span
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    left: b.left + '%',
+                    top: b.top + '%',
+                    width: b.size,
+                    height: b.size,
+                    background: 'radial-gradient(circle at 32% 30%, #fff, var(--peach))',
+                    animation: 'bubble 4s ease-in-out infinite',
+                    animationDelay: b.delay + 's',
+                  }}
+                />
+              ))}
+            </div>
+
+            <div
+              className="absolute right-[-4%] top-[30%] z-20 flex flex-col gap-1.5 rounded-2xl px-4 py-3 font-mono text-[11px] transition-all duration-300 sm:text-xs"
+              style={{
+                background: '#211a12',
+                color: '#a9e28a',
+                opacity: react === 'code' ? 1 : 0,
+                transform: react === 'code' ? 'none' : 'translateY(10px) scale(.94)',
+              }}
+            >
+              <span>&gt; npm create vibe</span>
+              <span>&gt; designing…</span>
+              <span>&gt; done ✓</span>
+            </div>
+          </div>
+        );
+      }
+
+      /** Shown when neither render can be found, so the hero never breaks. */
+      function PortraitPlaceholder() {
+        return (
+          <svg
+            viewBox="0 0 240 320"
+            style={PORTRAIT_STYLE}
+            className="select-none"
+            role="img"
+            aria-label="Portrait placeholder"
+          >
+            <circle cx="120" cy="106" r="62" fill="var(--panel)" />
+            <path d="M24 320 C24 232 64 190 120 190 C176 190 216 232 216 320 Z" fill="var(--panel)" />
+            <text x="120" y="304" textAnchor="middle" fontSize="10" letterSpacing="1.5" fill="var(--text-dim)">
+              ADD portrait-dark / portrait-light
+            </text>
+          </svg>
+        );
+      }
+
+      /** Walks the candidate list on each load error. */
+      function PortraitImage({ candidates, alt }) {
+        const [index, setIndex] = useState(0);
+        const [exhausted, setExhausted] = useState(false);
+
+        if (exhausted) return <PortraitPlaceholder />;
+
+        return (
+          <img
+            src={candidates[index]}
+            alt={alt}
+            draggable={false}
+            style={PORTRAIT_STYLE}
+            className="select-none object-contain"
+            onError={() => {
+              if (index < candidates.length - 1) setIndex(index + 1);
+              else setExhausted(true);
+            }}
+          />
+        );
+      }
+
+      /** Reads the theme attribute ThemeToggle writes on <html>. The page
+       *  switches themes with pure CSS, but the ring shader has to change a
+       *  uniform (alphaMode), so it needs the value in React. */
+      function useThemeAttr() {
+        const [theme, setTheme] = useState(function () {
+          return document.documentElement.getAttribute('data-theme') === 'warm' ? 'warm' : 'dark';
+        });
+
+        useEffect(function () {
+          const root = document.documentElement;
+          const read = function () {
+            setTheme(root.getAttribute('data-theme') === 'warm' ? 'warm' : 'dark');
+          };
+          read();
+          const observer = new MutationObserver(read);
+          observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+          return function () {
+            observer.disconnect();
+          };
+        }, []);
+
+        return theme;
+      }
+
+      /** Continuous WebGL animation is exactly what this preference is about. */
+      function usePrefersReducedMotion() {
+        const [reduced, setReduced] = useState(false);
+
+        useEffect(function () {
+          if (!window.matchMedia) return undefined;
+          const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+          const read = function () {
+            setReduced(query.matches);
+          };
+          read();
+          query.addEventListener('change', read);
+          return function () {
+            query.removeEventListener('change', read);
+          };
+        }, []);
+
+        return reduced;
+      }
+
+      function HeroSection() {
+        const heroRef = useRef(null);
+        const charRef = useRef(null);
+        const copyRef = useRef(null);
+        const hintRef = useRef(null);
+        const [react, setReact] = useState(null);
+        const content = useContent();
+        const theme = useThemeAttr();
+        const reducedMotion = usePrefersReducedMotion();
+        // A continuously animating WebGL field is exactly what this preference
+        // asks us not to do, so the rings simply do not render for those users.
+        const ringsEnabled = !reducedMotion;
+
+        const dirs = { design: [-1, -1], ai: [1, -1], code: [-1, 1], psych: [1, 1] };
+
+        useEffect(() => {
+          const hero = heroRef.current;
+          if (!hero) return;
+          let raf = 0;
+
+          const onMove = (e) => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+              raf = 0;
+              if (document.body.dataset.react) return;
+              const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+              const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+              const c = charRef.current;
+              if (!c) return;
+              c.style.setProperty('--head-rot', (nx * 5).toFixed(2) + 'deg');
+              c.style.setProperty('--char-tilt', (nx * -2).toFixed(2) + 'deg');
+              void ny;
+            });
+          };
+
+          hero.addEventListener('mousemove', onMove);
+          return () => {
+            hero.removeEventListener('mousemove', onMove);
+            if (raf) cancelAnimationFrame(raf);
+          };
+        }, []);
+
+        useEffect(() => {
+          const onScroll = () => {
+            const vh = window.innerHeight || 1;
+            const p = Math.min(1, Math.max(0, window.scrollY / (vh * 0.85)));
+            const c = charRef.current;
+            if (c) {
+              c.style.setProperty('--char-scale', (1 - p * 0.42).toFixed(3));
+              c.style.setProperty('--char-y', (p * 40).toFixed(1) + 'px');
+            }
+            if (copyRef.current) copyRef.current.style.opacity = String(1 - p);
+            if (hintRef.current) hintRef.current.style.opacity = String(1 - p);
+            const hero = heroRef.current;
+            if (!hero) return;
+            const props = hero.querySelectorAll('.hero-prop');
+            for (let i = 0; i < props.length; i++) {
+              const el = props[i];
+              const d = dirs[el.getAttribute('data-dir')] || [0, 0];
+              el.style.setProperty('--px', (d[0] * p * 90).toFixed(1) + 'px');
+              el.style.setProperty('--py', (d[1] * p * 70).toFixed(1) + 'px');
+              el.style.opacity = String(1 - p * 0.8);
+            }
+          };
+          window.addEventListener('scroll', onScroll, { passive: true });
+          onScroll();
+          return () => window.removeEventListener('scroll', onScroll);
+        }, []);
+
+        const setReaction = (key) => {
+          setReact(key);
+          if (key) document.body.dataset.react = key;
+          else delete document.body.dataset.react;
+        };
+
+        return (
+          <section id="hero" ref={heroRef} className="tinted flex min-h-screen flex-col" style={{ '--tint': 'var(--accent)', '--warm-mix': '0%', '--warm-glow': '0.32', overflowX: 'clip' }}>
+            <div className="tint-layer" />
+
+            <FadeIn
+              as="nav"
+              y={-20}
+              className="relative z-30 flex items-start justify-between gap-4 px-5 pt-6 sm:px-8 md:px-10 md:pt-8"
+            >
+              <a href="#hero" className="leading-tight">
+                <span className="block text-lg font-black tracking-[0.14em] sm:text-xl">YIJUN</span>
+                <span className="txt-dim block text-[10px] font-medium uppercase tracking-[0.24em]">
+                  Designer / AI Learner
+                </span>
+              </a>
+
+              <div className="flex items-center gap-4 md:gap-8">
+                <div className="hidden items-center gap-5 text-xs font-medium uppercase tracking-[0.16em] sm:flex md:gap-8 md:text-sm">
+                  {NAV.map((n) => (
+                    <a key={n.label} href={n.href} className="transition-opacity duration-200 hover:opacity-60">
+                      {n.label}
+                    </a>
+                  ))}
+                </div>
+                <ThemeToggle />
+              </div>
+            </FadeIn>
+
+            <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-6">
+              <div className="relative" style={{ width: 'min(80vw, 470px)', height: 'clamp(300px, 54vh, 580px)' }}>
+                {/* MagicRings sits behind the portrait. It keeps pointer events
+                    so followMouse / clickBurst work — everything interactive
+                    (the floating props, the portrait) paints above it. */}
+                <div className="absolute inset-0 z-[5]">
+                  {ringsEnabled ? (
+                    <MagicRings
+                      color="#ED9E5C"
+                      colorTwo="#F4B8A4"
+                      ringCount={6}
+                      speed={0.8}
+                      attenuation={7}
+                      lineThickness={2.5}
+                      baseRadius={0.34}
+                      radiusStep={0.1}
+                      scaleRate={0.12}
+                      opacity={1}
+                      noiseAmount={0.06}
+                      ringGap={1.5}
+                      fadeIn={0.7}
+                      fadeOut={0.5}
+                      followMouse
+                      mouseInfluence={0.15}
+                      hoverScale={1.15}
+                      parallax={0.04}
+                      clickBurst
+                      /* 'luminance' is made for dark surfaces; on the cream
+                         palette geometry-coverage alpha is what stays visible. */
+                      alphaMode={theme === 'warm' ? 'coverage' : 'luminance'}
+                    />
+                  ) : null}
+                </div>
+
+                {HERO_PROPS.map((p, i) => (
+                  <div
+                    key={p.key}
+                    data-dir={p.key}
+                    className={'hero-prop absolute z-20 ' + p.cls}
+                    style={{
+                      transform: 'translate(var(--px, 0px), var(--py, 0px))',
+                      animation: 'floaty 5s ease-in-out infinite',
+                      animationDelay: i * -1.3 + 's',
+                      transition: 'opacity .3s ease',
+                    }}
+                    onMouseEnter={() => setReaction(p.key)}
+                    onMouseLeave={() => setReaction(null)}
+                  >
+                    <div className="rim card-surface flex items-center gap-2 rounded-full border-2 px-3 py-2 transition-transform duration-300 hover:scale-105 sm:px-4">
+                      <span className="grid h-7 w-7 place-items-center rounded-full" style={{ background: 'var(--panel)' }}>
+                        {ICONS[p.key]}
+                      </span>
+                      <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.14em] sm:text-xs">
+                        {p.label}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                <ReactionLayer react={react} />
+
+                {/* DESIGN reaction — a photo cannot raise its arm, so the
+                    hover answers with the palette drifting in instead. */}
+                <div
+                  className="pointer-events-none absolute right-[4%] top-[24%] z-20 flex gap-2 transition-all duration-300"
+                  style={{
+                    opacity: react === 'design' ? 1 : 0,
+                    transform: react === 'design' ? 'none' : 'scale(.8)',
+                  }}
+                >
+                  <span className="h-4 w-4 rounded-full" style={{ background: 'var(--accent)' }} />
+                  <span className="h-4 w-4 rounded-full" style={{ background: 'var(--peach)' }} />
+                  <span className="h-4 w-4 rounded-full" style={{ background: 'var(--sage)' }} />
+                </div>
+
+                <div
+                  ref={charRef}
+                  className="pointer-events-none absolute inset-0 z-[15] flex items-end justify-center"
+                  style={{
+                    transform:
+                      'translateY(var(--char-y, 0px)) scale(var(--char-scale, 1)) rotate(var(--char-tilt, 0deg))',
+                    willChange: 'transform',
+                  }}
+                >
+                  <Magnet padding={140} magnetStrength={6}>
+                    <div className="theme-dark-only">
+                      {content.portrait.dark ? (
+                        <img
+                          src={content.portrait.dark}
+                          alt="YIJUN — 个人卡通形象"
+                          draggable={false}
+                          style={PORTRAIT_STYLE}
+                          className="select-none object-contain"
+                        />
+                      ) : (
+                        <PortraitImage candidates={PORTRAIT.dark} alt="YIJUN — 白西装形象（深色）" />
+                      )}
+                    </div>
+                    <div className="theme-light-only">
+                      {content.portrait.light ? (
+                        <img
+                          src={content.portrait.light}
+                          alt="YIJUN — 个人卡通形象"
+                          draggable={false}
+                          style={PORTRAIT_STYLE}
+                          className="select-none object-contain"
+                        />
+                      ) : (
+                        <PortraitImage candidates={PORTRAIT.light} alt="YIJUN — 白西装形象（浅色）" />
+                      )}
+                    </div>
+                  </Magnet>
+                </div>
+              </div>
+            </div>
+
+            <div ref={copyRef} className="relative z-20 px-5 pb-2 text-center sm:px-8">
+              <FadeIn y={30}>
+                <p className="font-medium uppercase tracking-[0.4em]" style={{ color: 'var(--accent)', fontSize: 'clamp(.62rem,1.3vw,.95rem)' }}>
+                  {HERO.brand}
+                </p>
+              </FadeIn>
+              <FadeIn as="h1" delay={0.1} y={30}>
+                <span className="hero-heading mt-3 block font-black leading-none tracking-tight" style={{ fontSize: 'clamp(2.6rem, 8.6vw, 7rem)' }}>
+                  {HERO.title}
+                </span>
+              </FadeIn>
+              <FadeIn delay={0.2} y={20}>
+                <p className="txt-dim mt-4 text-sm leading-relaxed sm:text-base">{HERO.sub}</p>
+              </FadeIn>
+              <FadeIn delay={0.28} y={16}>
+                <p className="txt-dim mt-2 text-[11px] tracking-wide sm:text-xs">{HERO.lab}</p>
+              </FadeIn>
+            </div>
+
+            <div ref={hintRef} className="relative z-20 pb-7 pt-5 text-center">
+              <a href="#about" className="txt-dim inline-flex flex-col items-center gap-1 text-[11px] tracking-[0.18em] sm:text-xs">
+                {HERO.scroll}
+                <span style={{ animation: 'bounce 1.8s ease-in-out infinite' }}>↓</span>
+              </a>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Works stream — the marquee, refilled with your own posters          */
+      /* ------------------------------------------------------------------ */
+
+      function PosterTile({ index, image }) {
+        return (
+          <div className="h-full w-full overflow-hidden rounded-2xl">
+            {image ? (
+              <img src={image} alt="" loading="lazy" className="h-full w-full object-cover object-top" />
+            ) : (
+              <Poster index={index} />
+            )}
+          </div>
+        );
+      }
+
+      function WorksStream() {
+        const sectionRef = useRef(null);
+        const row1Ref = useRef(null);
+        const row2Ref = useRef(null);
+        const content = useContent();
+
+        // Your uploaded works when there are any, otherwise the built-in six.
+        const items = content.works.length ? content.works : WORKS;
+        const tileCount = items.length;
+        // Both rows carry every tile, the second rotated by half, so neither
+        // row degrades into repeating two pictures when there are only a few.
+        const half = Math.max(1, Math.ceil(tileCount / 2));
+        const listA = [];
+        const listB = [];
+        for (let i = 0; i < tileCount; i++) {
+          listA.push(i);
+          listB.push((i + half) % tileCount);
+        }
+
+        const imageAt = (i) => items[i % items.length].image || null;
+        const label = content.works.length ? '来自后台 · 向下滚动，它们会往两边走' : '向下滚动，它们会往两边走';
+
+        useEffect(() => {
+          let frame = 0;
+          const update = () => {
+            frame = 0;
+            const s = sectionRef.current;
+            if (!s) return;
+            const offset = (window.scrollY - s.offsetTop + window.innerHeight) * 0.3;
+            const shift = offset - 200;
+            if (row1Ref.current) row1Ref.current.style.transform = 'translateX(' + shift + 'px)';
+            if (row2Ref.current) row2Ref.current.style.transform = 'translateX(' + -shift + 'px)';
+          };
+          const request = () => {
+            if (frame) return;
+            frame = window.requestAnimationFrame(update);
+          };
+          update();
+          window.addEventListener('scroll', request, { passive: true });
+          window.addEventListener('resize', request);
+          return () => {
+            window.removeEventListener('scroll', request);
+            window.removeEventListener('resize', request);
+            if (frame) window.cancelAnimationFrame(frame);
+          };
+        }, []);
+
+        const Row = ({ list, rowRef }) => (
+          <div ref={rowRef} className="flex w-max gap-3" style={{ willChange: 'transform' }}>
+            {list.concat(list, list).map((idx, i) => (
+              <div key={i} className="shrink-0" style={{ width: 420, height: 300 }}>
+                <PosterTile index={idx} image={imageAt(idx)} />
+              </div>
+            ))}
+          </div>
+        );
+
+        return (
+          <section ref={sectionRef} className="relative py-16 sm:py-20" style={{ overflowX: 'clip' }}>
+            <div className="relative z-10 mx-auto mb-8 flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 sm:px-8 md:px-10">
+              <p className="text-[11px] font-medium uppercase tracking-[0.34em]" style={{ color: 'var(--accent)' }}>
+                Selected Works · 作品流
+              </p>
+              <p className="txt-dim text-[11px] tracking-wide sm:text-xs">{label}</p>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Row list={listA} rowRef={row1Ref} />
+              <Row list={listB} rowRef={row2Ref} />
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* About                                                               */
+      /* ------------------------------------------------------------------ */
+
+      function AboutSection() {
+        return (
+          <section id="about" className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--peach)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-5 sm:px-8 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)] md:gap-16 md:px-10">
+              <FadeIn x={-40} y={20} duration={0.9} className="mx-auto w-[210px] sm:w-[260px] md:w-full">
+                <div style={{ animation: 'floaty 6s ease-in-out infinite' }}>
+                  <Character pose="avatar" className="h-auto w-full" />
+                </div>
+                <p className="txt-dim mt-4 text-center text-[10px] uppercase tracking-[0.3em]">Designer / AI Learner</p>
+              </FadeIn>
+
+              <div>
+                <SectionHead eyebrow={ABOUT.eyebrow} title={ABOUT.title} tint="var(--accent)" />
+
+                <div className="mt-7 sm:mt-9">
+                  <AnimatedText
+                    text={ABOUT.lines.join('')}
+                    className="text-base font-light leading-relaxed sm:text-lg md:text-xl"
+                  />
+                </div>
+
+                <FadeIn delay={0.15} y={20} className="mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
+                  {ABOUT.flow.map((f, i) => (
+                    <span key={f} className="flex items-center gap-2 sm:gap-3">
+                      <span className="card-surface rim rounded-full border px-4 py-2 text-xs font-medium tracking-wide sm:text-sm">
+                        {f}
+                      </span>
+                      {i < ABOUT.flow.length - 1 ? <ArrowRight className="txt-dim h-3.5 w-3.5" /> : null}
+                    </span>
+                  ))}
+                </FadeIn>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Design — the works, as alternating large cards                      */
+      /* ------------------------------------------------------------------ */
+
+      /* How many works the homepage grid shows before it hands off to
+         works.html. The grid tiles are roughly a third of the height of the
+         old full-width alternating cards, so this is about three times as many
+         works for the same scroll. Set it to Infinity to always show
+         everything. */
+      const HOMEPAGE_LIMIT = 9;
+
+      function DesignSection() {
+        const content = useContent();
+        /* An admin row with no title and no image is an unfinished draft, not
+           something to publish — it used to render as a bare number and a "/". */
+        const works = (content.works.length ? content.works : WORKS).filter(function (w) {
+          return w.image || w.title || w.title2;
+        });
+
+        /* Categories are derived from the works themselves. The old hard-coded
+           list drifted from reality: it advertised five types while BRAND had
+           no work at all. */
+        const categoryList = [];
+        const categoryMeta = {};
+        works.forEach(function (w) {
+          const cat = (w.cat || '').toUpperCase();
+          if (!cat) return;
+          if (!categoryMeta[cat]) {
+            categoryMeta[cat] = { cat: cat, cn: w.catCn || '', count: 0 };
+            categoryList.push(categoryMeta[cat]);
+          }
+          categoryMeta[cat].count += 1;
+          if (!categoryMeta[cat].cn && w.catCn) categoryMeta[cat].cn = w.catCn;
+        });
+
+        const [filter, setFilter] = useState('');
+        const active = categoryMeta[filter] ? filter : '';
+        const shown = active
+          ? works.filter(function (w) {
+              return (w.cat || '').toUpperCase() === active;
+            })
+          : works;
+        const tiles = shown.slice(0, HOMEPAGE_LIMIT);
+        const rest = shown.length - tiles.length;
+        const archiveHref = active ? 'works.html?cat=' + encodeURIComponent(active) : 'works.html';
+
+        return (
+          <section id="works" className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--cream)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 md:px-10">
+              <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,300px)] md:gap-14">
+                <SectionHead
+                  eyebrow="Selected Design Works"
+                  title="我曾经这样表达。"
+                  sub="点开任意一张可以看大图 —— 记录我如何把复杂的信息，变成可以被看见、被理解的样子。"
+                  tint="var(--accent)"
+                />
+                <FadeIn delay={0.14} x={30} y={20} duration={0.9} className="mx-auto w-[200px] sm:w-[250px] md:w-full">
+                  <Character pose="brush" className="h-auto w-full" />
+                </FadeIn>
+              </div>
+
+              {/* Category filter — the same numbers as before, but each one is
+                  now tied to real works and filters the cards below. */}
+              <FadeIn y={24} className="mt-12 sm:mt-16">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={function () {
+                      setFilter('');
+                    }}
+                    aria-pressed={!active}
+                    className="rim card-surface flex items-center gap-2 rounded-full border-2 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition-transform duration-300 hover:-translate-y-0.5"
+                    style={!active ? { borderColor: 'var(--accent)', color: 'var(--accent)' } : undefined}
+                  >
+                    全部
+                    <span className="txt-dim font-normal">{works.length}</span>
+                  </button>
+                  {categoryList.map(function (c, i) {
+                    return (
+                      <button
+                        key={c.cat}
+                        type="button"
+                        onClick={function () {
+                          setFilter(c.cat);
+                        }}
+                        aria-pressed={active === c.cat}
+                        className="rim card-surface flex items-center gap-2 rounded-full border-2 px-4 py-2 transition-transform duration-300 hover:-translate-y-0.5"
+                        style={active === c.cat ? { borderColor: 'var(--accent)' } : undefined}
+                      >
+                        <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em]">{c.cat}</span>
+                        {c.cn ? <span className="txt-dim text-xs">{c.cn}</span> : null}
+                        <span className="txt-dim text-xs">{c.count}</span>
+                      </button>
+                    );
+                  })}
+                  <a
+                    href="works.html"
+                    className="ml-auto inline-flex items-center gap-2 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors sm:text-xs"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    独立页面浏览 <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </FadeIn>
+
+              {/* The grid. Posters keep their natural aspect instead of being
+                  cropped into a fixed frame — these are tall infographics and
+                  slicing them would throw away the content. Clicking one opens
+                  the full-size file in a new tab, where the browser's own zoom
+                  makes it readable. */}
+              <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {tiles.map((w, i) => {
+                  const catHref = w.cat ? 'works.html?cat=' + encodeURIComponent(w.cat.toUpperCase()) : 'works.html';
+                  const bigHref = w.image || w.link || catHref;
+                  return (
+                    <FadeIn key={w.num + '-' + i} y={30} className="h-full">
+                      <article className="card-surface rim flex h-full flex-col overflow-hidden rounded-[26px] border-2 transition-transform duration-300 hover:-translate-y-1 sm:rounded-[32px]">
+                        <a
+                          href={bigHref}
+                          target={w.image ? '_blank' : undefined}
+                          rel={w.image ? 'noreferrer' : undefined}
+                          className="block"
+                          aria-label={(w.title || w.num) + ' — 看大图'}
+                        >
+                          {w.image ? (
+                            <img src={w.image} alt={w.title || w.cat} loading="lazy" className="block h-auto w-full" />
+                          ) : (
+                            <div className="aspect-[4/5] w-full overflow-hidden">
+                              <Poster index={i} />
+                            </div>
+                          )}
+                        </a>
+
+                        <div
+                          className="flex flex-1 flex-col border-t px-4 py-4 sm:px-5"
+                          style={{ borderColor: 'var(--line)' }}
+                        >
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>
+                              {w.num}
+                            </span>
+                            {w.cat ? (
+                              <span className="txt-dim truncate text-[10px] font-semibold uppercase tracking-[0.16em]">
+                                {w.cat}
+                                {w.catCn ? ' · ' + w.catCn : ''}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {w.title || w.title2 ? (
+                            <h3 className="mt-2 text-sm font-bold leading-snug sm:text-base">
+                              {w.title}
+                              {w.title && w.title2 ? <br /> : null}
+                              {w.title2}
+                            </h3>
+                          ) : null}
+
+                          <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                            <span className="txt-dim text-[11px] tracking-[0.14em]">{w.year}</span>
+                            <a
+                              href={catHref}
+                              className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors hover:underline"
+                              style={{ color: 'var(--accent)' }}
+                            >
+                              同类作品 ↗
+                            </a>
+                          </div>
+                        </div>
+                      </article>
+                    </FadeIn>
+                  );
+                })}
+              </div>
+
+              {rest > 0 ? (
+                <FadeIn y={26} className="mt-14 sm:mt-16">
+                  <a
+                    href={archiveHref}
+                    className="card-surface rim group flex flex-wrap items-center justify-between gap-4 rounded-[28px] border-2 px-6 py-6 transition-transform duration-300 hover:-translate-y-0.5 sm:rounded-[36px] sm:px-9 sm:py-8"
+                  >
+                    <span>
+                      <span className="block text-[11px] font-medium uppercase tracking-[0.34em]" style={{ color: 'var(--accent)' }}>
+                        还有 {rest} 件{active ? ' ' + active : ''}作品
+                      </span>
+                      <span className="mt-2 block text-lg font-black tracking-tight sm:text-2xl">在作品页按分类看全部</span>
+                    </span>
+                    <span
+                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      全部作品 <ArrowUpRight className="h-4 w-4" />
+                    </span>
+                  </a>
+                </FadeIn>
+              ) : null}
+
+              <FadeIn y={26} className="mt-16 sm:mt-20">
+                <div className="card-surface rim rounded-[28px] border-2 p-6 sm:rounded-[36px] sm:p-9">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.34em]" style={{ color: 'var(--accent)' }}>
+                    作品类型
+                  </p>
+                  <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+                    {categoryList.map(function (c, i) {
+                      return (
+                        <a
+                          key={c.cat}
+                          href={'works.html?cat=' + encodeURIComponent(c.cat)}
+                          className="group flex items-baseline gap-3 lg:block"
+                        >
+                          <span className="text-2xl font-black leading-none sm:text-3xl" style={{ color: 'var(--accent)' }}>
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <div className="lg:mt-3">
+                            <p className="text-sm font-medium uppercase tracking-wide transition-colors group-hover:text-[var(--accent)]">
+                              {c.cat}
+                            </p>
+                            <p className="txt-dim text-xs">
+                              {c.cn}
+                              {c.cn ? ' · ' : ''}
+                              {c.count} 件作品
+                            </p>
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                  <p className="txt-dim mt-7 text-sm leading-relaxed sm:text-base">
+                    这样就不会让人觉得「这是一个只会做医院海报的人」，
+                    而是 —— <span style={{ color: 'var(--accent)' }}>这个设计师擅长复杂信息的视觉表达。</span>
+                  </p>
+                </div>
+              </FadeIn>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* AI — the workflow that changes as you scroll                        */
+      /* ------------------------------------------------------------------ */
+
+      function AiSection() {
+        const [mode, setMode] = useState('classic');
+        const [pulse, setPulse] = useState(-1);
+        const sectionRef = useRef(null);
+        const played = useRef(false);
+
+        const play = (next, delay) => {
+          setMode(next);
+          const words = next === 'ai' ? AI.next : AI.classic;
+          words.forEach((w, i) => {
+            window.setTimeout(() => {
+              setPulse(i);
+              window.setTimeout(() => setPulse(-1), 380);
+            }, (delay || 0) + i * 130);
+          });
+        };
+
+        useEffect(() => {
+          const el = sectionRef.current;
+          if (!el) return;
+          const obs = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((e) => {
+                if (e.isIntersecting && !played.current) {
+                  played.current = true;
+                  window.setTimeout(() => play('ai', 300), 700);
+                  obs.unobserve(el);
+                }
+              });
+            },
+            { threshold: 0.35 }
+          );
+          obs.observe(el);
+          return () => obs.disconnect();
+        }, []);
+
+        const words = mode === 'ai' ? AI.next : AI.classic;
+
+        return (
+          <section id="ai" ref={sectionRef} className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--ai)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 md:grid-cols-[minmax(0,1fr)_minmax(0,420px)] md:gap-16 md:px-10">
+              <div>
+                <SectionHead eyebrow={AI.eyebrow} title={AI.title} sub={AI.sub} tint="var(--ai)" />
+
+                <FadeIn delay={0.1} y={24} className="mt-9">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {[
+                      { key: 'classic', label: '传统设计工作流' },
+                      { key: 'ai', label: 'AI × Vibe Coding' },
+                    ].map((b) => (
+                      <button
+                        key={b.key}
+                        type="button"
+                        onClick={() => play(b.key, 0)}
+                        className={
+                          'rounded-full border-2 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.12em] transition-colors duration-300 sm:text-sm ' +
+                          (mode === b.key ? 'border-transparent' : 'rim hover:bg-[var(--panel)]')
+                        }
+                        style={mode === b.key ? { background: 'var(--ai)', color: '#3A2F14' } : undefined}
+                      >
+                        {b.label}
+                      </button>
+                    ))}
+                  </div>
+                </FadeIn>
+
+                <div className="mt-9 flex flex-col items-start gap-2.5">
+                  {words.map((w, i) => (
+                    <FadeIn key={i} delay={0.12 + i * 0.06} y={18} className="flex flex-col items-start gap-2.5">
+                      <span
+                        className="rounded-full border px-5 py-2.5 font-black tracking-tight transition-all duration-300"
+                        style={{
+                          fontSize: 'clamp(1rem, 2.4vw, 1.6rem)',
+                          background: pulse === i ? 'var(--ai)' : 'var(--panel)',
+                          color: pulse === i ? '#3A2F14' : 'var(--text)',
+                          borderColor: mode === 'ai' ? 'var(--ai)' : 'var(--line)',
+                          transform: pulse === i ? 'scale(1.05)' : 'none',
+                        }}
+                      >
+                        {w}
+                      </span>
+                      {i < words.length - 1 ? <span className="txt-dim pl-5 text-sm">↓</span> : null}
+                    </FadeIn>
+                  ))}
+                </div>
+              </div>
+
+              <FadeIn delay={0.15} x={30} y={20} duration={0.9} className="mx-auto w-[240px] sm:w-[300px] md:w-full">
+                <Character pose="ai" className="h-auto w-full" />
+              </FadeIn>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Vibe Coding — the terminal that becomes a real page                 */
+      /* ------------------------------------------------------------------ */
+
+      function CodingSection() {
+        const [lines, setLines] = useState([]);
+        const [typing, setTyping] = useState(false);
+        const [done, setDone] = useState(false);
+        const windowRef = useRef(null);
+        const played = useRef(false);
+
+        const sleep = (ms) => new Promise((r) => window.setTimeout(r, ms));
+
+        const run = async () => {
+          if (typing) return;
+          setTyping(true);
+          setDone(false);
+          setLines([]);
+          const acc = [];
+
+          for (let i = 0; i < CODING.lines.length; i++) {
+            const text = CODING.lines[i][0];
+            const cls = CODING.lines[i][1];
+
+            if (i === 0) {
+              for (let j = 1; j <= text.length; j++) {
+                acc[i] = { text: text.slice(0, j), cls: cls };
+                setLines(acc.slice());
+                await sleep(26);
+              }
+            } else {
+              acc[i] = { text: text, cls: cls };
+              setLines(acc.slice());
+              await sleep(340);
+            }
+            await sleep(220);
+          }
+
+          await sleep(400);
+          setDone(true);
+          setTyping(false);
+        };
+
+        useEffect(() => {
+          const el = windowRef.current;
+          if (!el) return;
+          const obs = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((e) => {
+                if (e.isIntersecting && !played.current) {
+                  played.current = true;
+                  window.setTimeout(run, 450);
+                  obs.unobserve(el);
+                }
+              });
+            },
+            { threshold: 0.35 }
+          );
+          obs.observe(el);
+          return () => obs.disconnect();
+        }, []);
+
+        const colorOf = { prompt: '#8CC778', think: '#9BB7A0', act: '#E9C868', done: '#8CC778' };
+
+        return (
+          <section id="code" className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--sage)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 px-5 sm:px-8 md:grid-cols-[minmax(0,1fr)_minmax(0,380px)] md:gap-16 md:px-10">
+              <div>
+                <SectionHead eyebrow={CODING.eyebrow} title={CODING.title} sub={CODING.sub} tint="var(--sage)" />
+
+                <FadeIn delay={0.12} y={30} className="mt-9">
+                  <div
+                    ref={windowRef}
+                    className="relative overflow-hidden rounded-[22px] border"
+                    style={{ background: '#211a12', borderColor: 'rgba(255,255,255,.08)' }}
+                  >
+                    <div className="flex items-center gap-2 border-b px-4 py-3" style={{ background: '#2e241a', borderColor: 'rgba(255,255,255,.06)' }}>
+                      <span className="h-3 w-3 rounded-full" style={{ background: '#F06A5C' }} />
+                      <span className="h-3 w-3 rounded-full" style={{ background: '#E9C868' }} />
+                      <span className="h-3 w-3 rounded-full" style={{ background: '#8CC778' }} />
+                      <span className="ml-2 font-mono text-[11px] text-[#C9B99F]">vibe-coding.sh</span>
+                      <button
+                        type="button"
+                        onClick={run}
+                        className="ml-auto font-mono text-sm text-[#C9B99F] transition-colors hover:text-white"
+                        title="重新播放"
+                      >
+                        ↻
+                      </button>
+                    </div>
+
+                    <pre className="m-0 min-h-[210px] px-5 py-5 font-mono text-[13px] leading-loose text-[#D9CDBB] sm:text-sm">
+                      {lines.map((l, i) => (
+                        <span key={i} className="block" style={{ color: colorOf[l.cls] || '#D9CDBB' }}>
+                          {l.text}
+                        </span>
+                      ))}
+                      {typing ? (
+                        <span className="mt-1 block h-4 w-2.5" style={{ background: '#8CC778', animation: 'blink .9s steps(2) infinite' }} />
+                      ) : null}
+                    </pre>
+
+                    <div
+                      className="absolute inset-0 grid place-items-center p-5 transition-opacity duration-500"
+                      style={{ background: 'rgba(33,26,18,.96)', opacity: done ? 1 : 0, pointerEvents: done ? 'auto' : 'none' }}
+                    >
+                      <div className="w-full max-w-[420px] overflow-hidden rounded-2xl" style={{ background: 'var(--bg)' }}>
+                        <div className="flex gap-1.5 px-4 py-2.5" style={{ background: 'var(--panel)' }}>
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--line)' }} />
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--line)' }} />
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--line)' }} />
+                        </div>
+                        <div className="p-6 text-left">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--accent)' }}>
+                            Not Just Design
+                          </p>
+                          <p className="hero-heading mt-2 text-2xl font-black">不止于设计。</p>
+                          <p className="txt-dim mt-1 text-sm">一个小想法，刚刚被做出来了。</p>
+                          <span className="mt-4 inline-block rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ background: 'rgba(140,199,120,.18)', color: '#7FBF6A' }}>
+                            ● Live
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </FadeIn>
+              </div>
+
+              <FadeIn delay={0.16} x={30} y={20} duration={0.9} className="mx-auto w-[250px] sm:w-[320px] md:w-full">
+                <Character pose="coding" className="h-auto w-full" />
+              </FadeIn>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Product — three sticky cards that stack as you scroll               */
+      /* ------------------------------------------------------------------ */
+
+      function ProductCard({ item, index, total, progress }) {
+        const targetScale = 1 - (total - 1 - index) * 0.03;
+        const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
+
+        return (
+          <div className="h-[85vh] sm:h-[95vh] lg:h-[108vh]">
+            <div className="sticky top-24 md:top-32">
+              <motion.div
+                style={{ scale, top: index * 28 + 'px' }}
+                className="card-surface rim relative origin-top rounded-[36px] border-2 p-4 sm:rounded-[48px] sm:p-6 md:rounded-[60px] md:p-8"
+              >
+                <div className="flex flex-wrap items-start gap-4 sm:gap-6 md:gap-8">
+                  <span className="font-black leading-[0.8]" style={{ fontSize: 'clamp(2.6rem, 9vw, 7rem)', color: 'var(--product)' }}>
+                    {item.num}
+                  </span>
+
+                  <div className="flex min-w-[150px] flex-1 flex-col gap-1 pt-2 sm:pt-4">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.3em]" style={{ color: 'var(--product)' }}>
+                      {item.badge} · {item.state}
+                    </span>
+                    <h3 className="font-black uppercase leading-tight tracking-tight" style={{ fontSize: 'clamp(1.05rem, 2.4vw, 2.1rem)' }}>
+                      {item.name}
+                    </h3>
+                  </div>
+
+                  <div className="pt-2 sm:pt-4">
+                    <GhostButton label="Preview" href="#contact" icon={<ArrowUpRight className="h-4 w-4" />} />
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-5 gap-3 sm:mt-8 sm:gap-5">
+                  <div className="col-span-2 flex flex-col gap-3 sm:gap-5">
+                    <img
+                      src={item.images[0]}
+                      alt={item.name + ' preview 01'}
+                      loading="lazy"
+                      className="w-full rounded-[28px] object-cover sm:rounded-[40px] md:rounded-[48px]"
+                      style={{ height: 'clamp(110px, 15vw, 210px)' }}
+                    />
+                    <img
+                      src={item.images[1]}
+                      alt={item.name + ' preview 02'}
+                      loading="lazy"
+                      className="w-full rounded-[28px] object-cover sm:rounded-[40px] md:rounded-[48px]"
+                      style={{ height: 'clamp(140px, 21vw, 320px)' }}
+                    />
+                  </div>
+                  <div className="col-span-3">
+                    <img
+                      src={item.images[2]}
+                      alt={item.name + ' preview 03'}
+                      loading="lazy"
+                      className="h-full w-full rounded-[28px] object-cover sm:rounded-[40px] md:rounded-[48px]"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        );
+      }
+
+      function ProductSection() {
+        const containerRef = useRef(null);
+        const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start start', 'end end'] });
+
+        return (
+          <section id="product" className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--product)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 md:px-10">
+              <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,300px)] md:gap-14">
+                <SectionHead eyebrow={PRODUCT.eyebrow} title={PRODUCT.title} sub={PRODUCT.sub} tint="var(--product)" />
+                <FadeIn delay={0.14} x={30} y={20} duration={0.9} className="mx-auto w-[220px] sm:w-[280px] md:w-full">
+                  <Character pose="product" className="h-auto w-full" />
+                </FadeIn>
+              </div>
+
+              <div ref={containerRef} className="mt-16 sm:mt-20">
+                {PRODUCT.items.map((item, i) => (
+                  <ProductCard key={item.num} item={item} index={i} total={PRODUCT.items.length} progress={scrollYProgress} />
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Psychology — thoughts + the emotion cloud                           */
+      /* ------------------------------------------------------------------ */
+
+      const MOOD_COLOR = {
+        sun: '#F8E2A0',
+        tired: '#EFE3CF',
+        rain: '#C9D4DE',
+        fog: '#E3E4E6',
+        rainbow: '#F9E4D4',
+      };
+
+      function PsychologySection() {
+        const [mood, setMood] = useState(null);
+        const active = mood ? PSYCH.moods.find((m) => m.key === mood) : null;
+        const fill = mood ? MOOD_COLOR[mood] : 'var(--psych)';
+
+        return (
+          <section id="psych" className="tinted py-20 sm:py-24 md:py-32" style={{ '--tint': 'var(--psych)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 md:px-10">
+              <SectionHead eyebrow={PSYCH.eyebrow} title={PSYCH.title} sub={PSYCH.sub} tint="var(--peach)" />
+
+              <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
+                <div className="flex flex-col gap-3">
+                  {PSYCH.thoughts.map((t, i) => {
+                    const external = /^https?:\/\//i.test(t.link);
+                    return (
+                      <FadeIn key={t.link} delay={i * 0.07} y={22}>
+                        <a
+                          href={t.link}
+                          target={external ? '_blank' : undefined}
+                          rel={external ? 'noreferrer' : undefined}
+                          className="card-surface rim group flex items-center gap-4 rounded-2xl border px-5 py-4 transition-transform duration-300 hover:-translate-y-0.5"
+                        >
+                          <span className="text-xs font-black" style={{ color: 'var(--accent)' }}>
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          <span className="flex-1 text-sm font-medium leading-snug sm:text-base">{t.text}</span>
+                          <span className="txt-dim whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors group-hover:text-[var(--accent)]">
+                            {external ? 'Visit ↗' : 'Read →'}
+                          </span>
+                        </a>
+                      </FadeIn>
+                    );
+                  })}
+
+                  <FadeIn delay={0.3} y={20} className="mt-4 flex items-center gap-5">
+                    <div className="w-[120px] shrink-0 sm:w-[150px]">
+                      <Character pose="cloud" className="h-auto w-full" />
+                    </div>
+                    <p className="txt-dim text-xs leading-relaxed sm:text-sm">
+                      这些内容以后会与「心语疗愈阁」形成连接 —— 让设计之外的关心，也有一个可以停留的地方。
+                    </p>
+                  </FadeIn>
+                </div>
+
+                <FadeIn delay={0.12} x={24} y={24} className="flex flex-col items-center">
+                  <div className="relative w-full max-w-[380px]">
+                    <svg viewBox="0 0 300 190" className="w-full">
+                      <path
+                        d="M70 150 a40 40 0 0 1 -4 -80 a55 55 0 0 1 106 -16 a42 42 0 0 1 58 34 a45 45 0 0 1 -6 62 z"
+                        fill={fill}
+                        style={{ transition: 'fill .6s ease' }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-8 text-center">
+                      <span className="text-2xl">{active ? active.emoji : '☁️'}</span>
+                      <p className="font-black leading-tight" style={{ fontSize: 'clamp(.95rem, 2.2vw, 1.25rem)', color: '#5A4636' }}>
+                        {active ? active.q : '今天的你，是什么天气？'}
+                      </p>
+                      <p className="text-[11px] leading-snug sm:text-xs" style={{ color: 'rgba(90,70,54,.72)' }}>
+                        {active ? active.msg : '点一个心情，看看云会变成什么样子。'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-7 flex flex-wrap justify-center gap-2">
+                    {PSYCH.moods.map((m) => (
+                      <button
+                        key={m.key}
+                        type="button"
+                        onClick={() => setMood(m.key)}
+                        className={
+                          'rounded-full border px-3 py-1.5 text-[11px] font-medium transition-all duration-300 sm:text-xs ' +
+                          (mood === m.key ? 'border-transparent' : 'rim card-surface hover:-translate-y-0.5')
+                        }
+                        style={mood === m.key ? { background: MOOD_COLOR[m.key], color: '#5A4636' } : undefined}
+                      >
+                        {m.emoji} {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </FadeIn>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Journey                                                             */
+      /* ------------------------------------------------------------------ */
+
+      function JourneySection() {
+        return (
+          <section className="tinted py-20 text-center sm:py-24 md:py-32" style={{ '--tint': 'var(--accent)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto max-w-4xl px-5 sm:px-8">
+              <SectionHead eyebrow={JOURNEY.eyebrow} title={JOURNEY.title} tint="var(--accent)" align="center" />
+
+              <div className="mt-12 flex flex-col items-center gap-2 sm:mt-16">
+                {JOURNEY.steps.map((s, i) => {
+                  const last = i === JOURNEY.steps.length - 1;
+                  return (
+                    <FadeIn key={s} delay={i * 0.09} y={20} className="flex flex-col items-center gap-2">
+                      <span
+                        className={
+                          'grid min-w-[150px] place-items-center rounded-full border-2 px-6 py-3 font-black tracking-tight sm:min-w-[200px] ' +
+                          (last ? 'border-dashed' : '')
+                        }
+                        style={{
+                          fontSize: 'clamp(.95rem, 2.2vw, 1.4rem)',
+                          borderColor: last ? 'var(--accent)' : 'var(--ring)',
+                          color: last ? 'var(--accent)' : 'var(--text)',
+                        }}
+                      >
+                        {s}
+                      </span>
+                      {!last ? <span className="txt-dim text-lg">↓</span> : null}
+                    </FadeIn>
+                  );
+                })}
+              </div>
+
+              <FadeIn delay={0.2} y={20} className="mt-10">
+                <p className="txt-dim mx-auto max-w-[560px] text-sm leading-relaxed sm:text-base">{JOURNEY.note}</p>
+              </FadeIn>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Footer                                                              */
+      /* ------------------------------------------------------------------ */
+
+      function FooterSection() {
+        return (
+          <footer id="contact" className="tinted pb-12 pt-20 sm:pt-24 md:pt-32" style={{ '--tint': 'var(--cream)' }}>
+            <div className="tint-layer" />
+            <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-5 text-center sm:px-8">
+              <FadeIn y={30} className="w-[210px] sm:w-[260px]">
+                <div style={{ animation: 'floaty 6s ease-in-out infinite' }}>
+                  <Character pose="sitting" className="h-auto w-full" />
+                </div>
+              </FadeIn>
+
+              <FadeIn as="h2" delay={0.08} y={26} className="mt-6">
+                <span className="hero-heading block font-black leading-[1.22] tracking-tight" style={{ fontSize: 'clamp(1.6rem, 4.4vw, 3rem)' }}>
+                  {FOOTER.lead[0]}
+                  <br />
+                  {FOOTER.lead[1]}
+                </span>
+              </FadeIn>
+
+              <FadeIn delay={0.16} y={18}>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] sm:text-sm" style={{ color: 'var(--accent)' }}>
+                  {FOOTER.en}
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.22} y={18} className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <ContactButton label={FOOTER.cta} href="#works" />
+                <GhostButton label="Back to top" href="#hero" icon={<ArrowUp className="h-4 w-4" />} />
+              </FadeIn>
+
+              <FadeIn delay={0.3} y={18} className="mt-14 w-full border-t pt-8" style={{ borderColor: 'var(--line)' }}>
+                <p className="txt-dim mx-auto max-w-[620px] text-xs leading-relaxed sm:text-sm">{FOOTER.statement}</p>
+                <p className="txt-dim mt-6 text-[10px] font-medium uppercase tracking-[0.3em]">
+                  © {new Date().getFullYear()} YIJUN · Not just design · 不止于设计
+                </p>
+              </FadeIn>
+            </div>
+          </footer>
+        );
+      }
+
+      /* ====================================================================
+       * App
+       * ================================================================== */
+
+      function App() {
+        return (
+          <ContentProvider>
+            <main style={{ overflowX: 'clip' }}>
+              <HeroSection />
+              <WorksStream />
+              <AboutSection />
+              <DesignSection />
+              <AiSection />
+              <CodingSection />
+              {/* ProductSection is intentionally not rendered — YIJUN removed
+                  the three product cards (MY PORTFOLIO / AI DESIGN TOOL /
+                  PSYCHOLOGY CONTENT TOOL). The component and its data stay
+                  defined below so restoring it is one line. */}
+              <PsychologySection />
+              <JourneySection />
+              <FooterSection />
+            </main>
+          </ContentProvider>
+        );
+      }
+
+      const rootEl = document.getElementById('root');
+
+      try {
+        createRoot(rootEl).render(<App />);
+      } catch (error) {
+        // Leave a visible diagnostic rather than a silent blank page.
+        rootEl.innerHTML =
+          '<div style="padding:40px;font-family:Kanit,system-ui,sans-serif;color:#D7E2EA;line-height:1.8">' +
+          '<div style="font-size:12px;letter-spacing:.3em;opacity:.55">NOT JUST DESIGN</div>' +
+          '<div style="font-size:18px;margin-top:12px">页面渲染出错</div>' +
+          '<pre style="margin-top:12px;white-space:pre-wrap;font-size:12px;opacity:.75">' +
+          String(error) +
+          '</pre></div>';
+      }
+
+      // Removed after the render attempt: on success React has already cleared
+      // the container, on failure the diagnostic above replaced it.
+      const bootEl = document.getElementById('boot');
+      if (bootEl) bootEl.remove();
+    </script>
+  </body>
+</html>
