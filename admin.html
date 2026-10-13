@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YIJUN · 内容后台</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0C0C'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Arial' font-weight='800' font-size='36' fill='%23ED9E5C'%3EY%3C/text%3E%3C/svg%3E"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      if (window.tailwind) {
+        tailwind.config = { theme: { extend: { fontFamily: { kanit: ['Kanit', 'sans-serif'] } } } };
+      }
+    </script>
+    <style>
+      body {
+        background: #0c0c0c;
+        color: #d7e2ea;
+        font-family: Kanit, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        margin: 0;
+      }
+      .card {
+        background: #111;
+        border: 1px solid rgba(215, 226, 234, 0.16);
+        border-radius: 18px;
+      }
+      .field {
+        background: #0c0c0c;
+        border: 1px solid rgba(215, 226, 234, 0.2);
+        border-radius: 10px;
+        color: #d7e2ea;
+        font-family: inherit;
+        padding: 8px 10px;
+        width: 100%;
+        font-size: 13px;
+      }
+      .field:focus {
+        outline: 2px solid #ed9e5c;
+        outline-offset: -1px;
+      }
+      .btn {
+        border-radius: 999px;
+        border: 1px solid rgba(215, 226, 234, 0.28);
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        transition: background 0.2s, transform 0.2s;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .btn:hover {
+        background: rgba(215, 226, 234, 0.08);
+      }
+      .btn-primary {
+        background: linear-gradient(123deg, #b600a8 0%, #ed9e5c 100%);
+        border-color: transparent;
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(123deg, #c500b6 0%, #f5ab68 100%);
+        transform: translateY(-1px);
+      }
+      .btn-ghost-warn {
+        border-color: rgba(240, 106, 92, 0.5);
+        color: #f08a7c;
+      }
+      .tab-active {
+        background: #ed9e5c;
+        color: #241706;
+        border-color: transparent;
+      }
+      .thumb {
+        background: #0c0c0c;
+        border: 1px dashed rgba(215, 226, 234, 0.25);
+      }
+      .hint {
+        color: rgba(215, 226, 234, 0.55);
+        font-size: 12px;
+        line-height: 1.8;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen">
+    <div class="mx-auto max-w-5xl px-5 py-8 sm:px-8">
+      <!-- header -->
+      <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] tracking-[0.3em]" style="color: #ed9e5c">NOT JUST DESIGN</p>
+          <h1 class="mt-1 text-2xl font-black tracking-tight sm:text-3xl">内容后台</h1>
+          <p class="hint mt-1" id="storageState">正在检测存储…</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-primary" id="publishBtn">☁ 保存并发布</button>
+          <button class="btn" id="exportJson">导出备份 JSON</button>
+          <button class="btn" id="importBtn">导入备份</button>
+          <input type="file" id="importFile" accept=".json,application/json" hidden />
+          <button class="btn btn-ghost-warn" id="resetBtn">清空</button>
+        </div>
+      </header>
+
+      <!-- publish hint -->
+      <div class="card mb-8 p-5">
+        <p class="text-sm font-semibold">发布流程（两步）</p>
+        <ol class="hint mt-2 list-decimal space-y-1 pl-5">
+          <li>在这里上传<b>个人卡通形象</b>和<b>作品</b>，点右上角 <b>☁ 保存并发布</b>。</li>
+          <li>数据写入 GitHub 仓库的 <code>content.json</code> —— 打开网站<b>刷新</b>，所有访客立刻看到最新内容。</li>
+        </ol>
+        <p class="hint mt-3">
+          数据量：<span id="dataSize" style="color: #ed9e5c">—</span>
+          <span class="ml-2">· 云端状态：<span id="cloudState">未连接</span></span>
+        </p>
+      </div>
+
+      <!-- github settings -->
+      <div class="card mb-8 p-5">
+        <p class="text-sm font-semibold">☁ 云端连接（GitHub）</p>
+        <p class="hint mt-1 mb-4">发布与云端加载都需要先填好这里。Token 只保存在这台浏览器的本地，随时可以在 GitHub 上吊销；访客打不开这个后台的发布功能。</p>
+        <div class="grid gap-4 md:grid-cols-3">
+          <label class="block">
+            <span class="hint">仓库（owner/repo）</span>
+            <input class="field mt-1" id="ghRepo" value="hellenyijun-hub/hellenyijun-hub.github.io" />
+          </label>
+          <label class="block">
+            <span class="hint">分支</span>
+            <input class="field mt-1" id="ghBranch" value="main" />
+          </label>
+          <label class="block">
+            <span class="hint">Token（fine-grained，只给这一个仓库的 Contents 读写权限）</span>
+            <input class="field mt-1" id="ghToken" type="password" placeholder="github_pat_…" autocomplete="off" />
+          </label>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button class="btn" id="saveGhSettings">保存连接设置</button>
+          <button class="btn" id="loadCloudBtn">↓ 从云端加载</button>
+        </div>
+      </div>
+
+      <!-- tabs -->
+      <nav class="mb-6 flex gap-2">
+        <button class="btn tab-active" id="tabPortraitBtn" data-tab="portrait">个人形象</button>
+        <button class="btn" id="tabWorksBtn" data-tab="works">作品</button>
+      </nav>
+
+      <!-- ============ portrait ============ -->
+      <section id="tab-portrait">
+        <div class="grid gap-5 md:grid-cols-2">
+          <div class="card p-5">
+            <p class="text-sm font-semibold">深色主题用的形象</p>
+            <p class="hint mt-1 mb-4">黑底那张。默认显示在深色首页。</p>
+            <div class="thumb mb-4 flex h-[260px] items-center justify-center overflow-hidden rounded-xl">
+              <img id="pvDark" alt="" hidden class="max-h-full max-w-full object-contain" />
+              <span class="hint" id="phDark">还没有上传</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn" data-pick="dark">选择图片</button>
+              <button class="btn btn-ghost-warn" data-clear="dark">移除</button>
+            </div>
+          </div>
+
+          <div class="card p-5">
+            <p class="text-sm font-semibold">暖色主题用的形象</p>
+            <p class="hint mt-1 mb-4">白底那张。点 ☼/◐ 切到暖奶油主题时显示。</p>
+            <div class="thumb mb-4 flex h-[260px] items-center justify-center overflow-hidden rounded-xl">
+              <img id="pvLight" alt="" hidden class="max-h-full max-w-full object-contain" />
+              <span class="hint" id="phLight">还没有上传</span>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn" data-pick="light">选择图片</button>
+              <button class="btn btn-ghost-warn" data-clear="light">移除</button>
+            </div>
+          </div>
+        </div>
+        <p class="hint mt-4">
+          建议：直接用<b>透明背景</b>的 PNG/WebP 最干净；如果你只有黑底／白底两张，就按主题分别上传 ——
+          站点会用纯 CSS 按当前主题自动切换。
+        </p>
+        <input type="file" id="portraitFile" accept="image/*" hidden />
+      </section>
+
+      <!-- ============ works ============ -->
+      <section id="tab-works" hidden>
+        <div id="workList" class="flex flex-col gap-5"></div>
+
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button class="btn btn-primary" id="addWork">+ 新增作品</button>
+          <span class="hint" id="workCount"></span>
+        </div>
+      </section>
+
+      <footer class="hint mt-12 border-t pt-6" style="border-color: rgba(215, 226, 234, 0.12)">
+        这个后台是纯前端页面。点「☁ 保存并发布」后数据存到 GitHub：家里、办公室任意电脑打开后台都是同一份内容，网站刷新即更新。本地浏览器也保留一份草稿，断网时不丢失；「导出备份 JSON」可额外留底。
+      </footer>
+    </div>
+
+    <!-- ============ work card template ============ -->
+    <template id="workTpl">
+      <div class="card p-5">
+        <div
+          class="jsWarn mb-4 hidden items-center gap-2 rounded-xl border px-3 py-2 text-xs"
+          style="border-color: rgba(240, 138, 124, 0.5); color: #f08a7c; background: rgba(240, 138, 124, 0.08)"
+        >
+          <span>⚠ 这条还没有标题 —— 站点上会渲染成一张只有编号的半空卡片</span>
+        </div>
+        <div class="flex flex-col gap-5 sm:flex-row">
+          <div class="w-full sm:w-[200px]">
+            <div class="thumb flex h-[150px] items-center justify-center overflow-hidden rounded-xl">
+              <img class="jsThumb max-h-full max-w-full object-cover" alt="" hidden />
+              <span class="hint jsThumbPh">还没有上传图</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button class="btn jsPick">上传作品图</button>
+              <button class="btn btn-ghost-warn jsClearImg">删除图</button>
+            </div>
+          </div>
+
+          <div class="flex-1">
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <label class="col-span-1">
+                <span class="hint">编号（按顺序自动生成）</span>
+                <input class="field mt-1" data-f="num" placeholder="01" />
+              </label>
+              <label class="col-span-1">
+                <span class="hint">年份</span>
+                <input class="field mt-1" data-f="year" placeholder="2026" />
+              </label>
+              <label class="col-span-2">
+                <span class="hint">分类（选一个即可，快速上传）</span>
+                <select class="field mt-1 jsCat">
+                  <option value="">— 还没有分类 —</option>
+                  <option value="PSYCHOLOGY|心理科普">01 PSYCHOLOGY · 心理科普</option>
+                  <option value="MEDICAL|医疗健康">02 MEDICAL · 医疗健康</option>
+                  <option value="CAMPAIGN|活动宣传">03 CAMPAIGN · 活动宣传</option>
+                  <option value="INFORMATION|信息视觉">04 INFORMATION · 信息视觉</option>
+                  <option value="BRAND|医疗品牌视觉">05 BRAND · 医疗品牌视觉</option>
+                  <option value="__custom">自定义…</option>
+                </select>
+              </label>
+              <label class="col-span-2">
+                <span class="hint">英文副标（如 COMMUNICATION）</span>
+                <input class="field mt-1" data-f="catEn" placeholder="COMMUNICATION" />
+              </label>
+              <div class="jsCustomCat col-span-4 hidden">
+                <div class="grid grid-cols-2 gap-3">
+                  <label>
+                    <span class="hint">英文分类</span>
+                    <input class="field mt-1" data-f="cat" placeholder="PSYCHOLOGY" />
+                  </label>
+                  <label>
+                    <span class="hint">中文分类</span>
+                    <input class="field mt-1" data-f="catCn" placeholder="心理科普" />
+                  </label>
+                </div>
+              </div>
+              <label class="col-span-2">
+                <span class="hint">标题 第一行</span>
+                <input class="field mt-1" data-f="title" placeholder="青少年厌学" />
+              </label>
+              <label class="col-span-2">
+                <span class="hint">标题 第二行</span>
+                <input class="field mt-1" data-f="title2" placeholder="心理科普视觉" />
+              </label>
+              <label class="col-span-4">
+                <span class="hint">点击后跳转链接（可留空）</span>
+                <input class="field mt-1" data-f="link" placeholder="https://…" />
+              </label>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button class="btn jsUp">↑ 上移</button>
+              <button class="btn jsDown">↓ 下移</button>
+              <button class="btn btn-ghost-warn jsDel">删除这条</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <input type="file" id="workFile" accept="image/*" hidden />
+
+    <script>
+      (function () {
+        'use strict';
+
+        var DB_NAME = 'yijun-admin';
+        var STORE = 'content';
+        var KEY = 'content';
+        var MAX_PORTRAIT = 1600;
+        var MAX_WORK = 2000;
+
+        var state = { version: 1, updatedAt: '', portrait: { dark: null, light: null }, works: [] };
+        var editingWorkIndex = -1;
+        var editingPortraitKey = null;
+
+        /* ---------------------------------------------------------------- */
+        /* storage: IndexedDB, falling back to localStorage                 */
+        /* ---------------------------------------------------------------- */
+
+        function idbOpen() {
+          return new Promise(function (resolve, reject) {
+            if (!window.indexedDB) {
+              reject(new Error('IndexedDB 不可用'));
+              return;
+            }
+            var req;
+            try {
+              req = window.indexedDB.open(DB_NAME, 1);
+            } catch (err) {
+              reject(err);
+              return;
+            }
+            req.onupgradeneeded = function () {
+              var db = req.result;
+              if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+            };
+            req.onsuccess = function () {
+              resolve(req.result);
+            };
+            req.onerror = function () {
+              reject(req.error || new Error('打开 IndexedDB 失败'));
+            };
+          });
+        }
+
+        function idbGet(db) {
+          return new Promise(function (resolve) {
+            try {
+              var get = db.transaction(STORE, 'readonly').objectStore(STORE).get(KEY);
+              get.onsuccess = function () {
+                resolve(get.result || null);
+              };
+              get.onerror = function () {
+                resolve(null);
+              };
+            } catch (err) {
+              resolve(null);
+            }
+          });
+        }
+
+        function idbPut(db, value) {
+          return new Promise(function (resolve, reject) {
+            try {
+              var tx = db.transaction(STORE, 'readwrite');
+              tx.objectStore(STORE).put(value, KEY);
+              tx.oncomplete = function () {
+                resolve(true);
+              };
+              tx.onerror = function () {
+                reject(tx.error || new Error('写入 IndexedDB 失败'));
+              };
+              tx.onabort = function () {
+                reject(tx.error || new Error('写入 IndexedDB 被中断'));
+              };
+            } catch (err) {
+              reject(err);
+            }
+          });
+        }
+
+        var store = {
+          mode: 'none',
+          db: null,
+          note: '',
+          init: function () {
+            var self = this;
+            return idbOpen()
+              .then(function (db) {
+                self.db = db;
+                self.mode = 'indexeddb';
+              })
+              .catch(function () {
+                try {
+                  window.localStorage.setItem('__yj_probe', '1');
+                  window.localStorage.removeItem('__yj_probe');
+                  self.mode = 'localstorage';
+                  self.note = 'IndexedDB 不可用，已降级到 localStorage（容量约 5MB，作品图很快就会写满，建议及时「☁ 保存并发布」或「导出备份 JSON」）';
+                } catch (err) {
+                  self.mode = 'none';
+                  self.note = '浏览器禁用了本地存储 —— 仍然可以上传并发布，刷新后本地草稿会丢失';
+                }
+              });
+          },
+          read: function () {
+            if (this.mode === 'indexeddb' && this.db) return idbGet(this.db);
+            if (this.mode === 'localstorage') {
+              try {
+                var raw = window.localStorage.getItem(KEY);
+                return Promise.resolve(raw ? JSON.parse(raw) : null);
+              } catch (err) {
+                return Promise.resolve(null);
+              }
+            }
+            return Promise.resolve(null);
+          },
+          write: function (value) {
+            if (this.mode === 'indexeddb' && this.db) {
+              return idbPut(this.db, value).then(function () {
+                return { ok: true };
+              }).catch(function (err) {
+                return { ok: false, error: String(err) };
+              });
+            }
+            if (this.mode === 'localstorage') {
+              try {
+                window.localStorage.setItem(KEY, JSON.stringify(value));
+                return Promise.resolve({ ok: true });
+              } catch (err) {
+                return Promise.resolve({
+                  ok: false,
+                  error: 'localStorage 写不下（容量约 5MB）。作品图已保留在页面上，导出的 content.js 不受影响。',
+                });
+              }
+            }
+            return Promise.resolve({ ok: false, error: '没有可用的本地存储' });
+          },
+        };
+
+        /* ---------------------------------------------------------------- */
+        /* images                                                           */
+        /* ---------------------------------------------------------------- */
+
+        function readAsDataUrl(file) {
+          return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () {
+              resolve(String(reader.result));
+            };
+            reader.onerror = function () {
+              reject(new Error('读取文件失败'));
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        function loadImage(src) {
+          return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () {
+              resolve(img);
+            };
+            img.onerror = function () {
+              reject(new Error('这张图无法解码'));
+            };
+            img.src = src;
+          });
+        }
+
+        /** Shrinks the image and re-encodes as WebP (keeping alpha) so the
+         *  exported content.js does not balloon. */
+        function prepareImage(file, maxSize) {
+          return readAsDataUrl(file)
+            .then(function (raw) {
+              return loadImage(raw).then(function (img) {
+                var scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                var w = Math.max(1, Math.round(img.width * scale));
+                var h = Math.max(1, Math.round(img.height * scale));
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                var out = canvas.toDataURL('image/webp', 0.88);
+                if (out.indexOf('data:image/webp') !== 0) out = canvas.toDataURL('image/png');
+                return out;
+              });
+            });
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* helpers                                                          */
+        /* ---------------------------------------------------------------- */
+
+        function bytesOf(obj) {
+          try {
+            return new Blob([JSON.stringify(obj)]).size;
+          } catch (err) {
+            return JSON.stringify(obj).length;
+          }
+        }
+
+        function humanSize(bytes) {
+          if (bytes < 1024) return bytes + ' B';
+          if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+          return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+        }
+
+        function download(filename, text, mime) {
+          var blob = new Blob([text], { type: mime + ';charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 4000);
+        }
+
+        function setStatus(message, warn) {
+          var el = document.getElementById('storageState');
+          el.textContent = message;
+          el.style.color = warn ? '#f08a7c' : 'rgba(215, 226, 234, 0.55)';
+        }
+
+        var saveTimer = 0;
+
+        function save() {
+          state.updatedAt = new Date().toISOString();
+          document.getElementById('dataSize').textContent = humanSize(bytesOf(state));
+          var missing = 0;
+          state.works.forEach(function (w) {
+            if (!w.title && !w.title2) missing += 1;
+          });
+          document.getElementById('workCount').textContent =
+            '共 ' +
+            state.works.length +
+            ' 件作品' +
+            (state.portrait.dark || state.portrait.light ? '，形象图已上传' : '') +
+            (missing ? ' · ⚠ ' + missing + ' 件缺标题' : '') +
+            (state.works.length > HOMEPAGE_FEATURED
+              ? ' · 首页只显示前 ' + HOMEPAGE_FEATURED + ' 件，用「上移」决定顺序'
+              : '');
+
+          if (saveTimer) window.clearTimeout(saveTimer);
+          saveTimer = window.setTimeout(function () {
+            store.write(state).then(function (res) {
+              if (!res.ok) setStatus('保存到浏览器失败：' + res.error, true);
+            });
+          }, 250);
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* rendering                                                        */
+        /* ---------------------------------------------------------------- */
+
+        function renderPortrait() {
+          ['dark', 'light'].forEach(function (key) {
+            var src = state.portrait[key];
+            var img = document.getElementById(key === 'dark' ? 'pvDark' : 'pvLight');
+            var ph = document.getElementById(key === 'dark' ? 'phDark' : 'phLight');
+            if (src) {
+              img.src = src;
+              img.hidden = false;
+              ph.hidden = true;
+            } else {
+              img.removeAttribute('src');
+              img.hidden = true;
+              ph.hidden = false;
+            }
+          });
+        }
+
+        /* Mirrors HOMEPAGE_LIMIT in DesignSection: the homepage grid renders at
+           most this many works, so ordering here decides what visitors see. */
+        var HOMEPAGE_FEATURED = 9;
+
+        /* The five categories the site's filter chips and collection pages use.
+           Picking one fills in both the English key and the Chinese label, so
+           an upload always lands in the right bucket. */
+        var CATEGORY_PRESETS = [
+          { cat: 'PSYCHOLOGY', cn: '心理科普' },
+          { cat: 'MEDICAL', cn: '医疗健康' },
+          { cat: 'CAMPAIGN', cn: '活动宣传' },
+          { cat: 'INFORMATION', cn: '信息视觉' },
+          { cat: 'BRAND', cn: '医疗品牌视觉' },
+        ];
+
+        function renderWorks() {
+          var list = document.getElementById('workList');
+          var tpl = document.getElementById('workTpl');
+          list.textContent = '';
+
+          state.works.forEach(function (work, index) {
+            var node = tpl.content.firstElementChild.cloneNode(true);
+            var thumb = node.querySelector('.jsThumb');
+            var thumbPh = node.querySelector('.jsThumbPh');
+
+            if (work.image) {
+              thumb.src = work.image;
+              thumb.hidden = false;
+              thumbPh.hidden = true;
+            }
+
+            var fields = node.querySelectorAll('[data-f]');
+            for (var i = 0; i < fields.length; i++) {
+              var input = fields[i];
+              var name = input.getAttribute('data-f');
+              input.value = work[name] == null ? '' : work[name];
+              input.addEventListener('input', function (event) {
+                var target = event.currentTarget;
+                var field = target.getAttribute('data-f');
+                var idx = Number(target.closest('.card').getAttribute('data-index'));
+                state.works[idx][field] = target.value;
+                save();
+              });
+            }
+
+            node.setAttribute('data-index', String(index));
+
+            /* Category dropdown. Choosing a preset writes cat + catCn together;
+               "自定义" reveals the free-text fields for anything that does not
+               fit the five standard types. */
+            var catSelect = node.querySelector('.jsCat');
+            var customCat = node.querySelector('.jsCustomCat');
+            var workCat = (work.cat || '').toUpperCase();
+            var preset = null;
+            for (var pi = 0; pi < CATEGORY_PRESETS.length; pi++) {
+              if (CATEGORY_PRESETS[pi].cat === workCat) preset = CATEGORY_PRESETS[pi];
+            }
+            catSelect.value = preset ? preset.cat + '|' + preset.cn : workCat ? '__custom' : '';
+            customCat.hidden = catSelect.value !== '__custom';
+
+            catSelect.addEventListener('change', function () {
+              var idx = Number(catSelect.closest('.card').getAttribute('data-index'));
+              var value = catSelect.value;
+              if (value === '__custom') {
+                customCat.hidden = false;
+              } else if (value) {
+                var parts = value.split('|');
+                state.works[idx].cat = parts[0];
+                state.works[idx].catCn = parts[1];
+                customCat.hidden = true;
+              } else {
+                state.works[idx].cat = '';
+                state.works[idx].catCn = '';
+                customCat.hidden = true;
+              }
+              node.querySelector('[data-f="cat"]').value = state.works[idx].cat || '';
+              node.querySelector('[data-f="catCn"]').value = state.works[idx].catCn || '';
+              renderWorks();
+              save();
+            });
+
+            /* Flag the half-empty row that used to reach the site as a bare
+               number and a "/" — the bug this change set started from. */
+            if (!work.title && !work.title2) {
+              node.querySelector('.jsWarn').classList.remove('hidden');
+              node.querySelector('.jsWarn').classList.add('flex');
+            }
+
+            node.querySelector('.jsUp').addEventListener('click', function () {
+              move(index, -1);
+            });
+            node.querySelector('.jsDown').addEventListener('click', function () {
+              move(index, 1);
+            });
+            node.querySelector('.jsDel').addEventListener('click', function () {
+              if (!window.confirm('确定删除这条作品？')) return;
+              state.works.splice(index, 1);
+              renumber();
+              renderWorks();
+              save();
+            });
+            node.querySelector('.jsPick').addEventListener('click', function () {
+              editingWorkIndex = index;
+              document.getElementById('workFile').click();
+            });
+            node.querySelector('.jsClearImg').addEventListener('click', function () {
+              state.works[index].image = null;
+              renderWorks();
+              save();
+            });
+
+            list.appendChild(node);
+          });
+
+          if (!state.works.length) {
+            var empty = document.createElement('p');
+            empty.className = 'hint';
+            empty.textContent = '还没有作品。点下面的「+ 新增作品」开始 —— 不传图也可以，站点会用内置的矢量海报。';
+            list.appendChild(empty);
+          }
+        }
+
+        function move(index, delta) {
+          var next = index + delta;
+          if (next < 0 || next >= state.works.length) return;
+          var tmp = state.works[index];
+          state.works[index] = state.works[next];
+          state.works[next] = tmp;
+          renumber();
+          renderWorks();
+          save();
+        }
+
+        /** 编号 follows the list order; only re-run on add / delete / move so
+         *  it never fights you while you are typing in the field. */
+        function renumber() {
+          state.works.forEach(function (work, i) {
+            work.num = String(i + 1).padStart(2, '0');
+          });
+        }
+
+        function switchTab(name) {
+          document.getElementById('tab-portrait').hidden = name !== 'portrait';
+          document.getElementById('tab-works').hidden = name !== 'works';
+          document.getElementById('tabPortraitBtn').classList.toggle('tab-active', name === 'portrait');
+          document.getElementById('tabWorksBtn').classList.toggle('tab-active', name === 'works');
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* export / import                                                  */
+        /* ---------------------------------------------------------------- */
+
+        function payload() {
+          return {
+            version: 1,
+            updatedAt: new Date().toISOString(),
+            portrait: state.portrait,
+            works: state.works,
+          };
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* github：content.json 是发布的唯一真相来源                        */
+        /* ---------------------------------------------------------------- */
+
+        var GH_TOKEN_KEY = 'yijun-gh-token';
+        var GH_REPO_KEY = 'yijun-gh-repo';
+        var GH_BRANCH_KEY = 'yijun-gh-branch';
+
+        function ghSettings() {
+          return {
+            repo: (document.getElementById('ghRepo').value || '').trim(),
+            branch: (document.getElementById('ghBranch').value || '').trim() || 'main',
+            token: (document.getElementById('ghToken').value || '').trim(),
+          };
+        }
+
+        function ghHeaders(token) {
+          return {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json',
+          };
+        }
+
+        function b64encodeUnicode(str) {
+          return btoa(
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (m, p) {
+              return String.fromCharCode(parseInt(p, 16));
+            })
+          );
+        }
+
+        function b64decodeUnicode(b64) {
+          var bin = atob(b64.replace(/\n/g, ''));
+          var pct = Array.prototype.map
+            .call(bin, function (c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join('');
+          return decodeURIComponent(pct);
+        }
+
+        function setCloud(msg, warn) {
+          var el = document.getElementById('cloudState');
+          el.textContent = msg;
+          el.style.color = warn ? '#f08a7c' : '#8fd6a4';
+        }
+
+        /** 把当前内容发布到仓库的 content.json */
+        function publishToGitHub() {
+          var s = ghSettings();
+          if (!s.token) {
+            setCloud('请先填写 Token 并保存连接设置', true);
+            setStatus('发布失败：还没有填写 GitHub Token', true);
+            return;
+          }
+          if (s.repo.indexOf('/') < 0) {
+            setCloud('仓库格式应为 owner/repo', true);
+            return;
+          }
+          setCloud('正在发布…', false);
+          setStatus('正在发布到 GitHub…', false);
+          var json = JSON.stringify(payload());
+          var apiBase = 'https://api.github.com/repos/' + s.repo;
+          fetch(apiBase + '/contents/content.json?ref=' + encodeURIComponent(s.branch), {
+            headers: ghHeaders(s.token),
+          })
+            .then(function (res) {
+              if (res.status === 404) return null;
+              if (!res.ok) throw new Error('读取云端文件失败（HTTP ' + res.status + '）');
+              return res.json();
+            })
+            .then(function (existing) {
+              var body = {
+                message: '更新作品集内容',
+                content: b64encodeUnicode(json),
+                branch: s.branch,
+              };
+              if (existing && existing.sha) body.sha = existing.sha;
+              return fetch(apiBase + '/contents/content.json', {
+                method: 'PUT',
+                headers: ghHeaders(s.token),
+                body: JSON.stringify(body),
+              });
+            })
+            .then(function (res) {
+              if (res.ok) return res.json();
+              return res
+                .json()
+                .catch(function () {
+                  return {};
+                })
+                .then(function (err) {
+                  throw new Error((err && err.message) || '发布失败（HTTP ' + res.status + '）');
+                });
+            })
+            .then(function () {
+              var t = new Date().toLocaleString('zh-CN');
+              setCloud('已发布 · ' + t, false);
+              setStatus('☁ 已发布到 GitHub（' + humanSize(json.length) + '）—— 打开网站刷新即可看到', false);
+            })
+            .catch(function (err) {
+              setCloud('发布失败', true);
+              setStatus('发布失败：' + String((err && err.message) || err) + ' —— 检查 Token 权限与仓库名', true);
+            });
+        }
+
+        /** 从云端 content.json 载入到编辑器 */
+        function loadFromCloud(manual) {
+          var s = ghSettings();
+          if (!s.token) {
+            if (manual) setCloud('请先填写 Token 并保存连接设置', true);
+            return Promise.resolve(false);
+          }
+          if (manual) setCloud('正在从云端加载…', false);
+          return fetch('https://api.github.com/repos/' + s.repo + '/contents/content.json?ref=' + encodeURIComponent(s.branch), {
+            headers: ghHeaders(s.token),
+          })
+            .then(function (res) {
+              if (res.status === 404) {
+                if (manual) setCloud('云端还没有 content.json，先点「保存并发布」创建', true);
+                return null;
+              }
+              if (!res.ok) throw new Error('HTTP ' + res.status);
+              return res.json();
+            })
+            .then(function (file) {
+              if (!file || !file.content) return false;
+              var parsed = JSON.parse(b64decodeUnicode(file.content));
+              applyImport(parsed);
+              renderPortrait();
+              renderWorks();
+              save();
+              setCloud('已从云端加载 · ' + (parsed.updatedAt || ''), false);
+              if (manual) setStatus('已从云端加载 ' + (parsed.works ? parsed.works.length : 0) + ' 件作品', false);
+              return true;
+            })
+            .catch(function (err) {
+              if (manual) {
+                setCloud('加载失败', true);
+                setStatus('从云端加载失败：' + String((err && err.message) || err), true);
+              }
+              return false;
+            });
+        }
+
+        function exportJson() {
+          download('yijun-content-backup.json', JSON.stringify(payload(), null, 2), 'application/json');
+        }
+
+        function importJson(file) {
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              applyImport(JSON.parse(String(reader.result)));
+            } catch (err) {
+              setStatus('这个 JSON 解析失败 —— 确认是从这里导出的备份？', true);
+            }
+          };
+          reader.onerror = function () {
+            setStatus('读取备份文件失败', true);
+          };
+          reader.readAsText(file, 'utf-8');
+        }
+
+        function applyImport(parsed) {
+          if (!parsed || typeof parsed !== 'object') {
+            setStatus('备份内容不合法', true);
+            return;
+          }
+          state.portrait = {
+            dark: (parsed.portrait && parsed.portrait.dark) || null,
+            light: (parsed.portrait && parsed.portrait.light) || null,
+          };
+          state.works = Array.isArray(parsed.works) ? parsed.works : [];
+          state.works.forEach(function (w, i) {
+            if (!w.num) w.num = String(i + 1).padStart(2, '0');
+          });
+          renderPortrait();
+          renderWorks();
+          save();
+          setStatus('已导入 ' + state.works.length + ' 件作品', false);
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* wiring                                                           */
+        /* ---------------------------------------------------------------- */
+
+        function addWork() {
+          state.works.push({
+            num: '',
+            cat: '',
+            catEn: '',
+            catCn: '',
+            title: '',
+            title2: '',
+            year: String(new Date().getFullYear()),
+            link: '',
+            image: null,
+          });
+          renumber();
+          renderWorks();
+          save();
+        }
+
+        function init() {
+          switchTab('portrait');
+          try {
+            document.getElementById('ghToken').value = window.localStorage.getItem(GH_TOKEN_KEY) || '';
+            var sr = window.localStorage.getItem(GH_REPO_KEY);
+            if (sr) document.getElementById('ghRepo').value = sr;
+            var sb = window.localStorage.getItem(GH_BRANCH_KEY);
+            if (sb) document.getElementById('ghBranch').value = sb;
+          } catch (err) {}
+          renderPortrait();
+          renderWorks();
+
+          document.getElementById('tabPortraitBtn').addEventListener('click', function () {
+            switchTab('portrait');
+          });
+          document.getElementById('tabWorksBtn').addEventListener('click', function () {
+            switchTab('works');
+          });
+          document.getElementById('addWork').addEventListener('click', addWork);
+          document.getElementById('publishBtn').addEventListener('click', publishToGitHub);
+          document.getElementById('loadCloudBtn').addEventListener('click', function () {
+            if (state.works.length && !window.confirm('从云端加载会覆盖当前编辑中的内容，继续？')) return;
+            loadFromCloud(true);
+          });
+          document.getElementById('saveGhSettings').addEventListener('click', function () {
+            var s = ghSettings();
+            try {
+              window.localStorage.setItem(GH_TOKEN_KEY, s.token);
+              window.localStorage.setItem(GH_REPO_KEY, s.repo);
+              window.localStorage.setItem(GH_BRANCH_KEY, s.branch);
+            } catch (err) {}
+            setCloud(s.token ? '已保存连接设置' : '已保存（未填 Token，暂不能发布）', !s.token);
+          });
+          document.getElementById('exportJson').addEventListener('click', exportJson);
+
+          document.getElementById('importBtn').addEventListener('click', function () {
+            document.getElementById('importFile').click();
+          });
+          document.getElementById('importFile').addEventListener('change', function (event) {
+            var file = event.target.files && event.target.files[0];
+            if (file) importJson(file);
+            event.target.value = '';
+          });
+
+          document.getElementById('resetBtn').addEventListener('click', function () {
+            if (!window.confirm('清空所有形象图与作品？此操作不可撤销。')) return;
+            state = { version: 1, updatedAt: '', portrait: { dark: null, light: null }, works: [] };
+            renderPortrait();
+            renderWorks();
+            save();
+            setStatus('已清空', false);
+          });
+
+          document.querySelectorAll('[data-pick]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              editingPortraitKey = btn.getAttribute('data-pick');
+              document.getElementById('portraitFile').click();
+            });
+          });
+          document.querySelectorAll('[data-clear]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              state.portrait[btn.getAttribute('data-clear')] = null;
+              renderPortrait();
+              save();
+            });
+          });
+
+          document.getElementById('portraitFile').addEventListener('change', function (event) {
+            var file = event.target.files && event.target.files[0];
+            event.target.value = '';
+            if (!file || !editingPortraitKey) return;
+            setStatus('正在处理图片…', false);
+            prepareImage(file, MAX_PORTRAIT).then(function (dataUrl) {
+              state.portrait[editingPortraitKey] = dataUrl;
+              renderPortrait();
+              save();
+              setStatus('形象图已更新（' + humanSize(dataUrl.length) + '）', false);
+            }).catch(function (err) {
+              setStatus('图片处理失败：' + String(err), true);
+            });
+          });
+
+          document.getElementById('workFile').addEventListener('change', function (event) {
+            var file = event.target.files && event.target.files[0];
+            event.target.value = '';
+            if (!file || editingWorkIndex < 0 || !state.works[editingWorkIndex]) return;
+            setStatus('正在处理图片…', false);
+            prepareImage(file, MAX_WORK).then(function (dataUrl) {
+              state.works[editingWorkIndex].image = dataUrl;
+              renderWorks();
+              save();
+              setStatus('作品图已更新（' + humanSize(dataUrl.length) + '）', false);
+            }).catch(function (err) {
+              setStatus('图片处理失败：' + String(err), true);
+            });
+          });
+
+          store.init().then(function () {
+            var modeLabel =
+              store.mode === 'indexeddb'
+                ? '存储：浏览器 IndexedDB（容量充足）'
+                : store.mode === 'localstorage'
+                ? '存储：localStorage 降级模式'
+                : '存储：不可用（只能导出，刷新会丢）';
+            setStatus(modeLabel + (store.note ? ' —— ' + store.note : ''), store.mode !== 'indexeddb');
+            return store.read();
+          }).then(function (saved) {
+            if (saved && (saved.works || saved.portrait)) {
+              state.portrait = {
+                dark: (saved.portrait && saved.portrait.dark) || null,
+                light: (saved.portrait && saved.portrait.light) || null,
+              };
+              state.works = Array.isArray(saved.works) ? saved.works : [];
+            }
+            renderPortrait();
+            renderWorks();
+            save();
+            // 本地是空的、云端有数据时自动采用云端（换电脑开箱即用）
+            if (!state.works.length && !state.portrait.dark && !state.portrait.light) {
+              loadFromCloud(false);
+            }
+          });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+  </body>
+</html>
